@@ -13,7 +13,7 @@ export interface CreatePollData {
 }
 
 export interface PollStateResponse {
-    status: 'IDLE' | 'ACTIVE';
+    status: 'IDLE' | 'ACTIVE' | 'ENDED';
     pollId?: string;
     question?: string;
     options?: Array<{ id: string; text: string; voteCount: number; isCorrect: boolean }>;
@@ -27,6 +27,24 @@ class PollService {
         const activePoll = await Poll.findOne({ status: 'ACTIVE' });
 
         if (!activePoll) {
+            // If no active poll, check for the most recently ended poll
+            const lastEndedPoll = await Poll.findOne({ status: 'ENDED' }).sort({ endedAt: -1 });
+
+            if (lastEndedPoll) {
+                return {
+                    status: 'ENDED',
+                    pollId: lastEndedPoll._id.toString(),
+                    question: lastEndedPoll.question,
+                    options: lastEndedPoll.options.map(opt => ({
+                        id: opt._id.toString(),
+                        text: opt.text,
+                        voteCount: opt.voteCount,
+                        isCorrect: opt.isCorrect
+                    })),
+                    serverTime: new Date().toISOString()
+                };
+            }
+
             return { status: 'IDLE' };
         }
 

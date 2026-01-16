@@ -162,7 +162,7 @@ const TeacherDashboard: React.FC = () => {
 
                                 return (
                                     <div key={opt.id} className="result-row">
-                                        <div className="result-bar-bg">
+                                        <div className={`result-bar-bg ${opt.isCorrect ? 'correct-bar' : ''}`}>
                                             <div
                                                 className={`result-bar-fill ${opt.isCorrect ? 'correct-fill' : ''}`}
                                                 style={{ width: `${percent}%` }}
@@ -231,14 +231,14 @@ const TeacherDashboard: React.FC = () => {
                                                 const percent = Math.round((opt.voteCount / total) * 100);
                                                 return (
                                                     <div key={opt.id} className="history-result-row">
-                                                        <div className="history-bar-bg">
+                                                        <div className={`history-bar-bg ${opt.isCorrect ? 'correct-bar' : ''}`}>
                                                             <div
                                                                 className={`history-bar-fill ${opt.isCorrect ? 'correct-fill' : ''}`}
                                                                 style={{ width: `${percent}%` }}
                                                             ></div>
                                                             <div className="history-content">
                                                                 <div className="history-opt-marker">
-                                                                    {idx + 1}
+                                                                    {opt.isCorrect ? '✅' : idx + 1}
                                                                 </div>
                                                                 <span className="history-opt-text">{opt.text}</span>
                                                                 <span className="history-opt-percent">{percent}%</span>

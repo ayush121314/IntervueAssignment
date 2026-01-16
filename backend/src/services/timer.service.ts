@@ -34,7 +34,8 @@ class TimerService {
                     options: poll.options.map(opt => ({
                         id: opt._id.toString(),
                         text: opt.text,
-                        voteCount: opt.voteCount
+                        voteCount: opt.voteCount,
+                        isCorrect: opt.isCorrect
                     })),
                     finalResults: true
                 });

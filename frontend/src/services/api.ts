@@ -13,7 +13,7 @@ export type PollStateResponse = {
     status: 'IDLE' | 'ACTIVE' | 'ENDED';
     pollId?: string;
     question?: string;
-    options?: Array<{ id: string; text: string; voteCount: number }>;
+    options?: Array<{ id: string; text: string; voteCount: number; isCorrect: boolean }>;
     startedAt?: string;
     duration?: number;
     serverTime?: string;
@@ -22,14 +22,14 @@ export type PollStateResponse = {
 
 export type CreatePollData = {
     question: string;
-    options: string[];
+    options: Array<{ text: string; isCorrect: boolean }>;
     duration: number;
 }
 
 export type PollHistoryItem = {
     id: string;
     question: string;
-    options: Array<{ id: string; text: string; voteCount: number }>;
+    options: Array<{ id: string; text: string; voteCount: number; isCorrect: boolean }>;
     duration: number;
     startedAt: string;
     endedAt?: string;

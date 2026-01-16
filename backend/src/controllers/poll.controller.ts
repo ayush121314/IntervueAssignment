@@ -38,7 +38,8 @@ class PollController {
                 options: poll.options.map(opt => ({
                     id: opt._id,
                     text: opt.text,
-                    voteCount: opt.voteCount
+                    voteCount: opt.voteCount,
+                    isCorrect: opt.isCorrect
                 })),
                 duration: poll.duration,
                 startedAt: poll.startedAt,
@@ -59,7 +60,8 @@ class PollController {
                 options: poll.options.map(opt => ({
                     id: opt._id,
                     text: opt.text,
-                    voteCount: opt.voteCount
+                    voteCount: opt.voteCount,
+                    isCorrect: opt.isCorrect
                 })),
                 duration: poll.duration,
                 startedAt: poll.startedAt,

@@ -1,9 +1,14 @@
 import Poll, { IPoll } from '../models/Poll';
 import mongoose from 'mongoose';
 
+export interface CreateOptionData {
+    text: string;
+    isCorrect: boolean;
+}
+
 export interface CreatePollData {
     question: string;
-    options: string[];
+    options: CreateOptionData[];
     duration: number;
 }
 
@@ -11,7 +16,7 @@ export interface PollStateResponse {
     status: 'IDLE' | 'ACTIVE';
     pollId?: string;
     question?: string;
-    options?: Array<{ id: string; text: string; voteCount: number }>;
+    options?: Array<{ id: string; text: string; voteCount: number; isCorrect: boolean }>;
     startedAt?: string;
     duration?: number;
     serverTime?: string;
@@ -32,7 +37,8 @@ class PollService {
             options: activePoll.options.map(opt => ({
                 id: opt._id.toString(),
                 text: opt.text,
-                voteCount: opt.voteCount
+                voteCount: opt.voteCount,
+                isCorrect: opt.isCorrect
             })),
             startedAt: activePoll.startedAt.toISOString(),
             duration: activePoll.duration,
@@ -49,9 +55,10 @@ class PollService {
 
         const poll = new Poll({
             question: data.question,
-            options: data.options.map(text => ({
+            options: data.options.map(opt => ({
                 _id: new mongoose.Types.ObjectId(),
-                text,
+                text: opt.text,
+                isCorrect: opt.isCorrect,
                 voteCount: 0
             })),
             duration: data.duration,

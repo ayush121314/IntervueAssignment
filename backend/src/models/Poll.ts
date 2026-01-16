@@ -4,6 +4,7 @@ export interface IOption {
     _id: mongoose.Types.ObjectId;
     text: string;
     voteCount: number;
+    isCorrect: boolean;
 }
 
 export interface IPoll extends Document {
@@ -18,7 +19,8 @@ export interface IPoll extends Document {
 
 const OptionSchema = new Schema<IOption>({
     text: { type: String, required: true },
-    voteCount: { type: Number, default: 0 }
+    voteCount: { type: Number, default: 0 },
+    isCorrect: { type: Boolean, default: false }
 });
 
 const PollSchema = new Schema<IPoll>({

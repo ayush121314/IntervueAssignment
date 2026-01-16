@@ -138,6 +138,7 @@ const StudentPoll: React.FC = () => {
                     <div className="question-text-box">
                         {pollState.question}
                     </div>
+
                     <div className="results-list">
                         {pollState.options?.map((opt, idx) => {
                             const total = pollState.options?.reduce((sum, o) => sum + o.voteCount, 0) || 1;
@@ -145,10 +146,12 @@ const StudentPoll: React.FC = () => {
 
                             return (
                                 <div key={opt.id} className="result-row">
-                                    <div className="result-bar-bg">
+                                    <div className={`result-bar-bg ${opt.isCorrect && isPollEnded ? 'correct-bar' : ''}`}>
                                         <div className="result-bar-fill" style={{ width: `${percent}%` }}></div>
                                         <div className="result-content">
-                                            <div className="opt-marker">{idx + 1}</div>
+                                            <div className="opt-marker">
+                                                {opt.isCorrect && isPollEnded ? '✅' : idx + 1}
+                                            </div>
                                             <span className="opt-text">{opt.text}</span>
                                             <span className="opt-percent">{percent}%</span>
                                         </div>

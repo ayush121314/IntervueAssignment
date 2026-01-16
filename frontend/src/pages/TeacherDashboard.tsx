@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useSocket } from '../hooks/useSocket';
 import { usePollState } from '../hooks/usePollState';
 import { usePollTimer } from '../hooks/usePollTimer';
@@ -8,7 +7,6 @@ import ChatWidget from '../components/ChatWidget';
 import './TeacherDashboard.css';
 
 const TeacherDashboard: React.FC = () => {
-    const navigate = useNavigate();
     const { socket } = useSocket();
     const { pollState, refetch } = usePollState(socket);
 
@@ -19,6 +17,10 @@ const TeacherDashboard: React.FC = () => {
         { id: 2, text: '', isCorrect: false }
     ]);
     const [creating, setCreating] = useState(false);
+    const [view, setView] = useState<'CREATE' | 'MONITOR' | 'HISTORY'>('CREATE');
+    const [participants, setParticipants] = useState<any[]>([]);
+    const [pollHistory, setPollHistory] = useState<any[]>([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
 
     const { formattedTime } = usePollTimer({
         startedAt: pollState.status === 'ACTIVE' ? pollState.startedAt || null : null,
@@ -26,7 +28,23 @@ const TeacherDashboard: React.FC = () => {
         serverTime: pollState.serverTime
     });
 
+    // Listen for participant updates to check if everyone has voted
+    React.useEffect(() => {
+        if (!socket) return;
+
+        socket.on('participants:update', (data: any[]) => {
+            setParticipants(data);
+        });
+
+        return () => {
+            socket.off('participants:update');
+        };
+    }, [socket]);
+
     const hasActivePoll = pollState.status === 'ACTIVE';
+    const totalVotes = pollState.options?.reduce((sum, opt) => sum + opt.voteCount, 0) || 0;
+    const activeParticipants = participants.length;
+    const allVoted = activeParticipants > 0 && totalVotes >= activeParticipants;
 
     const handleOptionChange = (id: number, field: 'text' | 'isCorrect', value: string | boolean) => {
         setOptions(options.map(opt => {
@@ -57,7 +75,10 @@ const TeacherDashboard: React.FC = () => {
         try {
             const pollData = await apiService.createPoll({
                 question: question.trim(),
-                options: validOptions.map(opt => opt.text.trim()),
+                options: validOptions.map(opt => ({
+                    text: opt.text.trim(),
+                    isCorrect: opt.isCorrect
+                })),
                 duration: parseInt(duration)
             });
 
@@ -81,6 +102,7 @@ const TeacherDashboard: React.FC = () => {
                 { id: 1, text: '', isCorrect: false },
                 { id: 2, text: '', isCorrect: false }
             ]);
+            setView('MONITOR');
         } catch (error: any) {
             alert(error.response?.data?.error || 'Failed to create poll');
         } finally {
@@ -97,18 +119,150 @@ const TeacherDashboard: React.FC = () => {
         }
     };
 
-    const handleViewHistory = () => {
-        navigate('/teacher/history');
+    const handleViewHistory = async () => {
+        setView('HISTORY');
+        setLoadingHistory(true);
+        try {
+            const history = await apiService.getPollHistory();
+            setPollHistory(history);
+        } catch (error) {
+            console.error('Failed to fetch history:', error);
+        } finally {
+            setLoadingHistory(false);
+        }
     };
 
     return (
         <div className="teacher-dashboard-container">
             <div className="brand-badge"><span>✨</span> Intervue Poll</div>
 
-            {!hasActivePoll ? (
+            {hasActivePoll ? (
+                /* Live Monitor View */
+                <div className="live-view">
+                    <div className="live-header-actions">
+                        <button className="view-history-btn" onClick={handleViewHistory}>
+                            👁 View Poll history
+                        </button>
+                    </div>
+
+                    <div className="question-card">
+                        <div className="question-header">
+                            <span className="q-label">Question</span>
+                            <span className="timer">⏱ {formattedTime}</span>
+                        </div>
+
+                        <div className="question-text-box">
+                            {pollState.question}
+                        </div>
+
+                        <div className="results-list">
+                            {pollState.options?.map((opt, idx) => {
+                                const total = pollState.options?.reduce((sum, o) => sum + o.voteCount, 0) || 1;
+                                const percent = total > 0 ? Math.round((opt.voteCount / total) * 100) : 0;
+
+                                return (
+                                    <div key={opt.id} className="result-row">
+                                        <div className="result-bar-bg">
+                                            <div
+                                                className={`result-bar-fill ${opt.isCorrect ? 'correct-fill' : ''}`}
+                                                style={{ width: `${percent}%` }}
+                                            ></div>
+                                            <div className="result-content">
+                                                <div className="opt-marker">
+                                                    {opt.isCorrect ? '✅' : idx + 1}
+                                                </div>
+                                                <span className={`opt-text ${opt.isCorrect ? 'correct-text' : ''}`}>
+                                                    {opt.text}
+                                                </span>
+                                                <span className="opt-percent">{percent}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <div className="live-footer">
+                        <div className="end-poll-wrapper">
+                            <button
+                                className="end-poll-btn"
+                                onClick={handleEndPoll}
+                                disabled={!allVoted}
+                                title={!allVoted ? "Waiting for all students to vote..." : ""}
+                            >
+                                End Poll
+                            </button>
+                            {!allVoted && (
+                                <span className="wait-warning">
+                                    (Waiting for all {activeParticipants} students to vote)
+                                </span>
+                            )}
+                        </div>
+                        <p className="waiting-text">Poll is active. Results update in real-time.</p>
+                    </div>
+                </div>
+            ) : view === 'HISTORY' ? (
+                /* Poll History View */
+                <div className="history-view">
+                    <div className="history-header">
+                        <h2 className="section-title">Poll History</h2>
+                        <button className="back-btn" onClick={() => setView('CREATE')}>
+                            ← Back to Dashboard
+                        </button>
+                    </div>
+
+                    {loadingHistory ? (
+                        <div className="history-loading">Loading history...</div>
+                    ) : pollHistory.length === 0 ? (
+                        <div className="no-history">No polls found in history.</div>
+                    ) : (
+                        <div className="history-list">
+                            {pollHistory.map((poll, pIdx) => (
+                                <div key={poll.id} className="history-item-container">
+                                    <h3 className="history-question-label">Question {pIdx + 1}</h3>
+                                    <div className="history-card">
+                                        <div className="history-card-header">
+                                            <p>{poll.question}</p>
+                                        </div>
+                                        <div className="history-results">
+                                            {poll.options.map((opt: any, idx: number) => {
+                                                const total = poll.options.reduce((sum: number, o: any) => sum + o.voteCount, 0) || 1;
+                                                const percent = Math.round((opt.voteCount / total) * 100);
+                                                return (
+                                                    <div key={opt.id} className="history-result-row">
+                                                        <div className="history-bar-bg">
+                                                            <div
+                                                                className={`history-bar-fill ${opt.isCorrect ? 'correct-fill' : ''}`}
+                                                                style={{ width: `${percent}%` }}
+                                                            ></div>
+                                                            <div className="history-content">
+                                                                <div className="history-opt-marker">
+                                                                    {idx + 1}
+                                                                </div>
+                                                                <span className="history-opt-text">{opt.text}</span>
+                                                                <span className="history-opt-percent">{percent}%</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            ) : (
                 /* Poll Creation View */
                 <div className="creation-view">
                     <div className="header-section">
+                        <div className="header-actions">
+                            <button className="view-history-btn" onClick={handleViewHistory}>
+                                👁 View Poll history
+                            </button>
+                        </div>
                         <h1 className="title">Let's Get Started</h1>
                         <p className="subtitle">
                             you'll have the ability to create and manage polls, ask questions, and monitor your students' responses in real-time.
@@ -196,56 +350,6 @@ const TeacherDashboard: React.FC = () => {
                                 {creating ? 'Creating...' : 'Ask Question'}
                             </button>
                         </div>
-                    </div>
-                </div>
-            ) : (
-                /* Live Monitor View */
-                <div className="live-view">
-                    <div className="live-header-actions">
-                        <button className="view-history-btn" onClick={handleViewHistory}>
-                            👁 View Poll history
-                        </button>
-                    </div>
-
-                    <div className="question-card">
-                        <div className="question-header">
-                            <span className="q-label">Question</span>
-                            <span className="timer">⏱ {formattedTime}</span>
-                        </div>
-
-                        <div className="question-text-box">
-                            {pollState.question}
-                        </div>
-
-                        <div className="results-list">
-                            {pollState.options?.map((opt, idx) => {
-                                const total = pollState.options?.reduce((sum, o) => sum + o.voteCount, 0) || 1;
-                                const percent = total > 0 ? Math.round((opt.voteCount / total) * 100) : 0;
-
-                                return (
-                                    <div key={opt.id} className="result-row">
-                                        <div className="result-bar-bg">
-                                            <div
-                                                className="result-bar-fill"
-                                                style={{ width: `${percent}%` }}
-                                            ></div>
-                                            <div className="result-content">
-                                                <div className="opt-marker">{idx + 1}</div>
-                                                <span className="opt-text">{opt.text}</span>
-                                                <span className="opt-percent">{percent}%</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    <div className="live-footer">
-                        <button className="end-poll-btn" onClick={handleEndPoll}>
-                            End Poll
-                        </button>
-                        <p className="waiting-text">Poll is active. Results update in real-time.</p>
                     </div>
                 </div>
             )}

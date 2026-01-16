@@ -6,6 +6,11 @@ class StudentService {
         let student = await StudentSession.findOne({ studentId });
 
         if (student) {
+            // Check if already kicked
+            if (student.isKicked) {
+                throw new Error('You have been kicked from the session and cannot rejoin.');
+            }
+
             // Update existing student
             student.name = name;
             student.socketId = socketId;
@@ -35,7 +40,7 @@ class StudentService {
     async kickStudent(studentId: string): Promise<void> {
         await StudentSession.findOneAndUpdate(
             { studentId },
-            { isActive: false }
+            { isActive: false, isKicked: true }
         );
     }
 

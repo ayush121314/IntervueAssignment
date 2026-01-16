@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import voteService from '../services/vote.service';
+import pollService from '../services/poll.service';
+import { Server } from 'socket.io';
 
 class VoteController {
     async submitVote(req: Request, res: Response): Promise<void> {
@@ -13,6 +15,14 @@ class VoteController {
             }
 
             const vote = await voteService.submitVote(pollId, studentId, optionId);
+
+            // Fetch current poll state and broadcast to all clients
+            const pollState = await pollService.getCurrentPoll();
+            const io: Server = req.app.get('io');
+            if (io) {
+                io.emit('poll:update', pollState);
+                console.log(`Broadcasted poll:update for poll ${pollId}`);
+            }
 
             res.status(201).json({
                 success: true,

@@ -284,7 +284,24 @@
 
 .live-footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--spacing-lg);
+}
+
+.end-poll-btn {
+    background-color: #ff4d4d;
+    color: white;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border-radius: var(--border-radius-xl);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.end-poll-btn:hover {
+    background-color: #ff3333;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(255, 77, 77, 0.3);
 }
 
 .ask-new-btn {

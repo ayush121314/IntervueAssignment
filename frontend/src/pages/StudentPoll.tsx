@@ -10,7 +10,7 @@ import './StudentPoll.css';
 
 const StudentPoll: React.FC = () => {
     const navigate = useNavigate();
-    const { studentInfo, hasVoted, setHasVoted, votedOptionId, setVotedOptionId } = usePollContext();
+    const { studentInfo, hasVoted, setHasVoted, setVotedOptionId } = usePollContext();
     const { socket, isConnected } = useSocket();
     const { pollState, loading } = usePollState(socket);
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -120,12 +120,18 @@ const StudentPoll: React.FC = () => {
         );
     }
 
-    if (hasVoted || isExpired) {
+    // Determine if we should show results: 
+    // Show results if student has voted OR if poll has ended
+    if (hasVoted || pollState.status === 'ENDED') {
+        const isPollEnded = pollState.status === 'ENDED';
+
         return (
             <div className="student-poll-container">
                 <div className="poll-header-row">
                     <span className="q-number">Question</span>
-                    <span className={`timer ${isExpired ? 'expired' : ''}`}>⏱ {formattedTime}</span>
+                    <span className={`timer ${(isExpired || isPollEnded) ? 'expired' : ''}`}>
+                        {isPollEnded ? 'POLL ENDED' : `⏱ ${formattedTime}`}
+                    </span>
                 </div>
 
                 <div className="question-card">

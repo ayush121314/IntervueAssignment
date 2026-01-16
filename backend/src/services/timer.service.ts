@@ -13,7 +13,7 @@ class TimerService {
         // Clear any existing timer for this poll
         this.clearTimer(pollId);
 
-        // Set new timer
+        // Set new timer to auto-end the poll when duration is up
         const timer = setTimeout(async () => {
             await this.endPoll(pollId);
         }, duration * 1000); // Convert seconds to milliseconds

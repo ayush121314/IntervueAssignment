@@ -112,8 +112,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ role }) => {
                         {activeTab === 'Chat' && (
                             <div className="chat-content">
                                 <div className="messages-list">
-                                    {messages.map(msg => (
-                                        <div key={msg.id} className={`message-bubble ${msg.role === role ? 'my-message' : 'other-message'}`}>
+                                    {messages.map((msg, idx) => (
+                                        <div key={msg.id || `msg-${idx}`} className={`message-bubble ${msg.role === role ? 'my-message' : 'other-message'}`}>
                                             <div className="sender-name">{msg.sender}</div>
                                             <div className="message-text">{msg.text}</div>
                                         </div>
@@ -142,8 +142,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ role }) => {
                                     {participants.length === 0 && (
                                         <p className="no-participants">No active participants</p>
                                     )}
-                                    {participants.map(p => (
-                                        <div key={p.id} className="participant-row">
+                                    {participants.map((p, idx) => (
+                                        <div key={p.id || `participant-${idx}`} className="participant-row">
                                             <span className="p-name">{p.name}</span>
                                             {role === 'TEACHER' && (
                                                 <button

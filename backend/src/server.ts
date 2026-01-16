@@ -71,6 +71,9 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 setupPollSocket(io);
 setupChatSocket(io);
 
+// Attach io to app for access in controllers
+app.set('io', io);
+
 // Set Socket.IO instance for timer service
 timerService.setSocketIO(io);
 

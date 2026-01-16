@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSocket } from '../hooks/useSocket';
 import { usePollState } from '../hooks/usePollState';
@@ -9,7 +9,7 @@ import './TeacherDashboard.css';
 
 const TeacherDashboard: React.FC = () => {
     const navigate = useNavigate();
-    const { socket, isConnected } = useSocket();
+    const { socket } = useSocket();
     const { pollState, refetch } = usePollState(socket);
 
     const [question, setQuestion] = useState('');
@@ -85,6 +85,15 @@ const TeacherDashboard: React.FC = () => {
             alert(error.response?.data?.error || 'Failed to create poll');
         } finally {
             setCreating(false);
+        }
+    };
+
+    const handleEndPoll = () => {
+        if (socket && pollState.pollId) {
+            if (confirm('Are you sure you want to end this poll?')) {
+                socket.emit('poll:end', { pollId: pollState.pollId });
+                // We don't need to refetch manually, poll:end event from server will update us
+            }
         }
     };
 
@@ -233,6 +242,9 @@ const TeacherDashboard: React.FC = () => {
                     </div>
 
                     <div className="live-footer">
+                        <button className="end-poll-btn" onClick={handleEndPoll}>
+                            End Poll
+                        </button>
                         <p className="waiting-text">Poll is active. Results update in real-time.</p>
                     </div>
                 </div>

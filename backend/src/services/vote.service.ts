@@ -37,18 +37,6 @@ class VoteService {
             // Update vote count in poll
             await pollService.updateVoteCount(pollId, optionId);
 
-            // Check if all active students have voted
-            const [activeStudents, voteCount] = await Promise.all([
-                studentService.getActiveStudents(),
-                Vote.countDocuments({ pollId })
-            ]);
-
-            if (voteCount >= activeStudents.length && activeStudents.length > 0) {
-                console.log(`Poll ${pollId} ending early: All students voted (${voteCount}/${activeStudents.length})`);
-                // Trigger early termination
-                timerService.endPoll(pollId);
-            }
-
             return vote;
         } catch (error: any) {
             if (error.code === 11000) {

@@ -41,14 +41,18 @@ export const usePollState = (socket: Socket | null) => {
                 options: data.options,
                 startedAt: data.startedAt,
                 duration: data.duration,
-                serverTime: new Date().toISOString()
+                serverTime: data.serverTime || new Date().toISOString()
             });
         });
 
         // Poll ended
-        socket.on('poll:end', (_data: any) => {
+        socket.on('poll:end', (data: any) => {
             setPollState({
-                status: 'IDLE'
+                status: 'ENDED',
+                pollId: data.pollId,
+                question: data.question,
+                options: data.options,
+                finalResults: true as any // Hack for simplicity in this context
             });
         });
 

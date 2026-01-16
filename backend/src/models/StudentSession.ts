@@ -6,6 +6,7 @@ export interface IStudentSession extends Document {
     socketId: string;
     joinedAt: Date;
     isActive: boolean;
+    isKicked: boolean;
 }
 
 const StudentSessionSchema = new Schema<IStudentSession>({
@@ -13,7 +14,8 @@ const StudentSessionSchema = new Schema<IStudentSession>({
     name: { type: String, required: true },
     socketId: { type: String, required: true },
     joinedAt: { type: Date, default: Date.now },
-    isActive: { type: Boolean, default: true }
+    isActive: { type: Boolean, default: true },
+    isKicked: { type: Boolean, default: false }
 }, {
     timestamps: true
 });

@@ -10,13 +10,14 @@ const api = axios.create({
 });
 
 export type PollStateResponse = {
-    status: 'IDLE' | 'ACTIVE';
+    status: 'IDLE' | 'ACTIVE' | 'ENDED';
     pollId?: string;
     question?: string;
     options?: Array<{ id: string; text: string; voteCount: number }>;
     startedAt?: string;
     duration?: number;
     serverTime?: string;
+    finalResults?: boolean;
 }
 
 export type CreatePollData = {

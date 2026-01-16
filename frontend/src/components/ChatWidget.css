@@ -1,0 +1,204 @@
+.chat-widget-wrapper {
+    position: fixed;
+    bottom: var(--spacing-lg);
+    right: var(--spacing-lg);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.chat-trigger-btn {
+    width: 56px;
+    height: 56px;
+    background-color: var(--color-secondary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-lg);
+    transition: transform 0.2s;
+}
+
+.chat-trigger-btn:hover {
+    transform: scale(1.05);
+}
+
+.chat-window {
+    width: 350px;
+    height: 450px;
+    background-color: white;
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    margin-bottom: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #E0E0E0;
+}
+
+.chat-header {
+    display: flex;
+    border-bottom: 2px solid #E0E0E0;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: var(--spacing-md);
+    background: none;
+    border: none;
+    font-weight: 600;
+    color: var(--color-text-sub);
+    cursor: pointer;
+    position: relative;
+}
+
+.tab-btn.active {
+    color: var(--color-primary);
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--color-primary);
+}
+
+.chat-body {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.messages-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.message-bubble {
+    max-width: 80%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    font-size: 0.9rem;
+}
+
+.my-message {
+    align-self: flex-end;
+    background-color: var(--color-primary);
+    color: white;
+    border-bottom-right-radius: 0;
+}
+
+.other-message {
+    align-self: flex-start;
+    background-color: #333;
+    /* Dark bubble from screenshot */
+    color: white;
+    border-bottom-left-radius: 0;
+}
+
+.sender-name {
+    font-size: 0.75rem;
+    margin-bottom: 2px;
+    opacity: 0.8;
+    color: var(--color-primary);
+    /* For "User 1" on top of bubble? Screenshot shows name OUTSIDE or INSIDE? Screenshot 26 shows name OUTSIDE message bubble. */
+}
+
+/* Redoing bubbles based on Screenshot 26 */
+.message-bubble {
+    display: flex;
+    flex-direction: column;
+}
+
+.other-message .sender-name {
+    color: var(--color-primary);
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.my-message .sender-name {
+    display: none;
+    /* Usually don't show own name */
+}
+
+.my-message {
+    background-color: #7B61FF;
+    /* Lighter purple from screenshot */
+}
+
+.chat-input-area {
+    padding: var(--spacing-md);
+    border-top: 1px solid #EEE;
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.chat-input-area input {
+    flex: 1;
+    padding: var(--spacing-sm);
+    border: 1px solid #DDD;
+    border-radius: var(--border-radius-sm);
+}
+
+/* Participants Styles */
+.participants-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.participants-header-row {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    font-weight: 600;
+    color: var(--color-text-sub);
+    border-bottom: 1px solid #EEE;
+}
+
+.participants-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.participant-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.p-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.kick-btn {
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    /* Link color blueish */
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.kick-btn:hover {
+    color: var(--color-error);
+}

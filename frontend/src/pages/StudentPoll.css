@@ -1,0 +1,150 @@
+.student-poll-container {
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-xl);
+    max-width: 800px;
+    margin: 0 auto;
+    min-height: 100vh;
+}
+
+.centered-view {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.kicked-title {
+    font-size: 2rem;
+    margin-bottom: var(--spacing-md);
+    color: var(--color-text-main);
+}
+
+.loader-spinner {
+    font-size: 3rem;
+    color: var(--color-primary);
+    /* Add animation later */
+    margin-bottom: var(--spacing-lg);
+}
+
+.waiting-text {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.poll-header-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.q-number {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.timer {
+    color: var(--color-error);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.timer.expired {
+    color: var(--color-text-sub);
+}
+
+/* Reuse Question Card from Teacher Dashboard logic but scoping issues */
+/* I should have made shared styles but for now I'll duplicate/adapt */
+
+.question-text-box {
+    background-color: #555;
+    color: white;
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+    font-weight: 500;
+    font-size: 1.1rem;
+}
+
+.options-list-active {
+    border: 1px solid #E0E0E0;
+    border-top: none;
+    border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+    padding: var(--spacing-md);
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.option-label {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: #F8F7FC;
+    border: 1px solid transparent;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    height: 48px;
+    justify-content: space-between;
+    transition: all 0.2s;
+}
+
+.option-label:hover {
+    background-color: #EEE;
+}
+
+.option-label.selected {
+    border-color: var(--color-primary);
+    background-color: #F8F7FC;
+    box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.opt-col-left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.opt-marker-active {
+    width: 24px;
+    height: 24px;
+    background-color: var(--color-primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.hidden-radio {
+    display: none;
+}
+
+.poll-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--spacing-xl);
+}
+
+.submit-vote-btn {
+    background-color: var(--color-primary);
+    color: white;
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-radius: var(--border-radius-xl);
+    font-weight: 600;
+    min-width: 150px;
+}
+
+.submit-vote-btn:disabled {
+    background-color: #CCC;
+    cursor: not-allowed;
+}
+
+.waiting-footer-text {
+    text-align: center;
+    font-weight: 600;
+    margin-top: var(--spacing-xl);
+    font-size: 1.1rem;
+}

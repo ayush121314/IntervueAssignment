@@ -1,39 +1,92 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useSocket } from '../hooks/useSocket';
+import { usePollContext } from '../context/PollContext';
 import './ChatWidget.css';
 
 interface ChatWidgetProps {
     role: 'STUDENT' | 'TEACHER';
 }
 
+interface Message {
+    id: string;
+    sender: string;
+    text: string;
+    role: 'STUDENT' | 'TEACHER';
+    timestamp: Date;
+}
+
+interface Participant {
+    id: string;
+    name: string;
+    joinedAt?: Date;
+}
+
 const ChatWidget: React.FC<ChatWidgetProps> = ({ role }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'Chat' | 'Participants'>('Chat');
-
-    // Mock Messages
-    const [messages, setMessages] = useState([
-        { id: 1, sender: 'User 1', text: 'Hey There, how can I help?', isMe: false },
-        { id: 2, sender: 'User 2', text: 'Nothing bro..just chill!!', isMe: true }
-    ]);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
+    const [participants, setParticipants] = useState<Participant[]>([]);
+    const { socket } = useSocket();
+    const { studentInfo } = usePollContext();
+    const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    // Mock Participants
-    const [participants, setParticipants] = useState([
-        { id: 1, name: 'Rahul Arora' },
-        { id: 2, name: 'Pushpender Rautela' },
-        { id: 3, name: 'Rijul Zalpuri' },
-        { id: 4, name: 'Nadeem N' },
-        { id: 5, name: 'Ashwin Sharma' }
-    ]);
+    // Fetch chat history on mount
+    useEffect(() => {
+        if (socket && isOpen) {
+            socket.emit('chat:getHistory');
+        }
+    }, [socket, isOpen]);
+
+    // Listen to socket events
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.on('chat:history', (history: Message[]) => {
+            setMessages(history);
+        });
+
+        socket.on('chat:message', (message: Message) => {
+            setMessages(prev => [...prev, message]);
+        });
+
+        socket.on('participants:update', (updatedParticipants: Participant[]) => {
+            setParticipants(updatedParticipants);
+        });
+
+        return () => {
+            socket.off('chat:history');
+            socket.off('chat:message');
+            socket.off('participants:update');
+        };
+    }, [socket]);
+
+    // Auto-scroll to bottom
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
 
     const handleSendMessage = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newMessage.trim()) return;
-        setMessages([...messages, { id: Date.now(), sender: 'Me', text: newMessage, isMe: true }]);
+        if (!newMessage.trim() || !socket) return;
+
+        const sender = role === 'TEACHER' ? 'Teacher' : (studentInfo?.name || 'Student');
+
+        socket.emit('chat:message', {
+            sender,
+            text: newMessage.trim(),
+            role
+        });
+
         setNewMessage('');
     };
 
-    const handleKick = (id: number) => {
-        setParticipants(participants.filter(p => p.id !== id));
+    const handleKick = (studentId: string) => {
+        if (!socket) return;
+
+        if (confirm('Are you sure you want to kick this student?')) {
+            socket.emit('student:kick', { studentId });
+        }
     };
 
     return (
@@ -60,11 +113,12 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ role }) => {
                             <div className="chat-content">
                                 <div className="messages-list">
                                     {messages.map(msg => (
-                                        <div key={msg.id} className={`message-bubble ${msg.isMe ? 'my-message' : 'other-message'}`}>
+                                        <div key={msg.id} className={`message-bubble ${msg.role === role ? 'my-message' : 'other-message'}`}>
                                             <div className="sender-name">{msg.sender}</div>
                                             <div className="message-text">{msg.text}</div>
                                         </div>
                                     ))}
+                                    <div ref={messagesEndRef} />
                                 </div>
                                 <form className="chat-input-area" onSubmit={handleSendMessage}>
                                     <input
@@ -85,6 +139,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ role }) => {
                                     {role === 'TEACHER' && <span>Action</span>}
                                 </div>
                                 <div className="participants-list">
+                                    {participants.length === 0 && (
+                                        <p className="no-participants">No active participants</p>
+                                    )}
                                     {participants.map(p => (
                                         <div key={p.id} className="participant-row">
                                             <span className="p-name">{p.name}</span>

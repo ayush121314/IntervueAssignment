@@ -1,82 +1,160 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { usePollContext } from '../context/PollContext';
+import { useSocket } from '../hooks/useSocket';
+import { usePollState } from '../hooks/usePollState';
+import { usePollTimer } from '../hooks/usePollTimer';
+import apiService from '../services/api';
 import ChatWidget from '../components/ChatWidget';
 import './StudentPoll.css';
 
 const StudentPoll: React.FC = () => {
-    // Mock states: 'WAITING' | 'ACTIVE' | 'VOTED' | 'KICKED'
-    const [status, setStatus] = useState<'WAITING' | 'ACTIVE' | 'VOTED' | 'KICKED'>('ACTIVE');
-    const [selectedOption, setSelectedOption] = useState<number | null>(null);
+    const navigate = useNavigate();
+    const { studentInfo, hasVoted, setHasVoted, votedOptionId, setVotedOptionId } = usePollContext();
+    const { socket, isConnected } = useSocket();
+    const { pollState, loading } = usePollState(socket);
+    const [selectedOption, setSelectedOption] = useState<string | null>(null);
+    const [isKicked, setIsKicked] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
 
-    const handleSubmit = () => {
-        if (selectedOption) {
-            setStatus('VOTED');
+    const { formattedTime, isExpired } = usePollTimer({
+        startedAt: pollState.status === 'ACTIVE' ? pollState.startedAt || null : null,
+        duration: pollState.duration || 0,
+        serverTime: pollState.serverTime
+    });
+
+    // Redirect if no student info
+    useEffect(() => {
+        if (!studentInfo) {
+            navigate('/student/join');
+        }
+    }, [studentInfo, navigate]);
+
+    // Register student via socket
+    useEffect(() => {
+        if (socket && isConnected && studentInfo) {
+            socket.emit('student:join', {
+                studentId: studentInfo.id,
+                name: studentInfo.name
+            });
+        }
+    }, [socket, isConnected, studentInfo]);
+
+    // Listen for kick event
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.on('student:kicked', () => {
+            setIsKicked(true);
+        });
+
+        return () => {
+            socket.off('student:kicked');
+        };
+    }, [socket]);
+
+    // Check if student already voted when poll loads
+    useEffect(() => {
+        const checkVoteStatus = async () => {
+            if (pollState.status === 'ACTIVE' && pollState.pollId && studentInfo) {
+                try {
+                    const { hasVoted: voted, vote } = await apiService.checkVoteStatus(
+                        pollState.pollId,
+                        studentInfo.id
+                    );
+                    setHasVoted(voted);
+                    if (vote) {
+                        setVotedOptionId(vote.optionId);
+                    }
+                } catch (error) {
+                    console.error('Error checking vote status:', error);
+                }
+            }
+        };
+
+        checkVoteStatus();
+    }, [pollState.pollId, pollState.status, studentInfo, setHasVoted, setVotedOptionId]);
+
+    const handleSubmit = async () => {
+        if (!selectedOption || !pollState.pollId || !studentInfo) return;
+
+        setSubmitting(true);
+        try {
+            await apiService.submitVote(pollState.pollId, studentInfo.id, selectedOption);
+            setHasVoted(true);
+            setVotedOptionId(selectedOption);
+        } catch (error: any) {
+            alert(error.response?.data?.error || 'Failed to submit vote');
+        } finally {
+            setSubmitting(false);
         }
     };
 
-    if (status === 'KICKED') {
+    if (isKicked) {
         return (
             <div className="student-poll-container centered-view">
                 <div className="brand-badge"><span>✨</span> Intervue Poll</div>
                 <h1 className="kicked-title">You've been Kicked out !</h1>
-                <p className="subtitle">Looks like the teacher had removed you from the poll system .Please Try again sometime.</p>
+                <p className="subtitle">Looks like the teacher had removed you from the poll system. Please try again sometime.</p>
             </div>
         );
     }
 
-    if (status === 'WAITING') {
+    if (loading) {
         return (
             <div className="student-poll-container centered-view">
                 <div className="brand-badge"><span>✨</span> Intervue Poll</div>
-                <div className="loader-spinner">C</div> {/* CSS Spinner */}
-                <h2 className="waiting-text">Wait for the teacher to ask questions..</h2>
-
-                {/* Dev Toggle */}
-                <button onClick={() => setStatus('ACTIVE')} style={{ marginTop: 20, opacity: 0.5 }}>Dev: Activate</button>
+                <div className="loader-spinner"></div>
+                <h2 className="waiting-text">Loading...</h2>
             </div>
         );
     }
 
-    if (status === 'VOTED') {
-        // Similar to Waiting but maybe says "Wait for new question"
-        // Screenshot 5.59.06 (File 31) shows "Wait for the teacher to ask a new question.." BELOW the results?
-        // Actually Screenshot 31 shows: Header Question 1 00:15. Question Box with Results (Bars). And text below "Wait for the teacher...".
-        // So VOTED state shows results + waiting message.
+    if (pollState.status === 'IDLE' || !pollState.pollId) {
+        return (
+            <div className="student-poll-container centered-view">
+                <div className="brand-badge"><span>✨</span> Intervue Poll</div>
+                <div className="loader-spinner"></div>
+                <h2 className="waiting-text">Wait for the teacher to ask questions..</h2>
+            </div>
+        );
+    }
+
+    if (hasVoted || isExpired) {
         return (
             <div className="student-poll-container">
                 <div className="poll-header-row">
-                    <span className="q-number">Question 1</span>
-                    <span className="timer expired">⏱ 00:00</span>
+                    <span className="q-number">Question</span>
+                    <span className={`timer ${isExpired ? 'expired' : ''}`}>⏱ {formattedTime}</span>
                 </div>
 
                 <div className="question-card">
                     <div className="question-text-box">
-                        Which planet is known as the Red Planet?
+                        {pollState.question}
                     </div>
                     <div className="results-list">
-                        {/* Reuse similar result bars logic or just static for verify */}
-                        {[
-                            { id: 1, text: 'Mars', percent: 75 },
-                            { id: 2, text: 'Venus', percent: 5 },
-                            { id: 3, text: 'Jupiter', percent: 5 },
-                            { id: 4, text: 'Saturn', percent: 15 }
-                        ].map((opt, idx) => (
-                            <div key={opt.id} className="result-row">
-                                <div className="result-bar-bg">
-                                    <div className="result-bar-fill" style={{ width: `${opt.percent}%` }}></div>
-                                    <div className="result-content">
-                                        <div className="opt-marker">{idx + 1}</div>
-                                        <span className="opt-text">{opt.text}</span>
-                                        <span className="opt-percent">{opt.percent}%</span>
+                        {pollState.options?.map((opt, idx) => {
+                            const total = pollState.options?.reduce((sum, o) => sum + o.voteCount, 0) || 1;
+                            const percent = total > 0 ? Math.round((opt.voteCount / total) * 100) : 0;
+
+                            return (
+                                <div key={opt.id} className="result-row">
+                                    <div className="result-bar-bg">
+                                        <div className="result-bar-fill" style={{ width: `${percent}%` }}></div>
+                                        <div className="result-content">
+                                            <div className="opt-marker">{idx + 1}</div>
+                                            <span className="opt-text">{opt.text}</span>
+                                            <span className="opt-percent">{percent}%</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
 
                 <p className="waiting-footer-text">Wait for the teacher to ask a new question..</p>
-                {/* Dev Toggle */}
-                <button onClick={() => setStatus('WAITING')} style={{ marginTop: 20, opacity: 0.5 }}>Dev: Reset</button>
+                <ChatWidget role="STUDENT" />
             </div>
         );
     }
@@ -84,22 +162,17 @@ const StudentPoll: React.FC = () => {
     return (
         <div className="student-poll-container">
             <div className="poll-header-row">
-                <span className="q-number">Question 1</span>
-                <span className="timer">⏱ 00:15</span>
+                <span className="q-number">Question</span>
+                <span className="timer">⏱ {formattedTime}</span>
             </div>
 
             <div className="question-card">
                 <div className="question-text-box">
-                    Which planet is known as the Red Planet?
+                    {pollState.question}
                 </div>
 
                 <div className="options-list-active">
-                    {[
-                        { id: 1, text: 'Mars' },
-                        { id: 2, text: 'Venus' },
-                        { id: 3, text: 'Jupiter' },
-                        { id: 4, text: 'Saturn' }
-                    ].map((opt, idx) => (
+                    {pollState.options?.map((opt, idx) => (
                         <label
                             key={opt.id}
                             className={`option-label ${selectedOption === opt.id ? 'selected' : ''}`}
@@ -108,12 +181,6 @@ const StudentPoll: React.FC = () => {
                                 <div className="opt-marker-active">{idx + 1}</div>
                                 <span className="opt-text">{opt.text}</span>
                             </div>
-                            {/* Radio is hidden or styled? 
-                           Screenshot 5.59.06 (File 29) shows just a purple border when selected? 
-                           Actually it shows Purple Border and maybe a checkmark? 
-                           Or just highlited. 
-                           I'll use purple border. 
-                        */}
                             <input
                                 type="radio"
                                 name="poll-option"
@@ -130,15 +197,15 @@ const StudentPoll: React.FC = () => {
             <div className="poll-footer">
                 <button
                     className="submit-vote-btn"
-                    disabled={!selectedOption}
+                    disabled={!selectedOption || submitting}
                     onClick={handleSubmit}
                 >
-                    Submit
+                    {submitting ? 'Submitting...' : 'Submit'}
                 </button>
             </div>
 
             <ChatWidget role="STUDENT" />
-        </div >
+        </div>
     );
 };
 

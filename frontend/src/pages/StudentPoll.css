@@ -79,24 +79,27 @@
 .option-label {
     display: flex;
     align-items: center;
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--spacing-md);
     background-color: #F8F7FC;
-    border: 1px solid transparent;
-    border-radius: var(--border-radius-sm);
+    border: 2px solid transparent;
+    border-radius: var(--border-radius-md);
     cursor: pointer;
-    height: 48px;
+    min-height: 56px;
     justify-content: space-between;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .option-label:hover {
-    background-color: #EEE;
+    background-color: #FFFFFF;
+    border-color: rgba(119, 101, 218, 0.2);
+    transform: translateX(8px);
+    box-shadow: var(--shadow-md);
 }
 
 .option-label.selected {
     border-color: var(--color-primary);
-    background-color: #F8F7FC;
-    box-shadow: 0 0 0 1px var(--color-primary);
+    background-color: #FFFFFF;
+    box-shadow: 0 4px 15px rgba(119, 101, 218, 0.2);
 }
 
 .opt-col-left {

@@ -1,29 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSocket } from '../hooks/useSocket';
+import { usePollState } from '../hooks/usePollState';
+import { usePollTimer } from '../hooks/usePollTimer';
+import apiService from '../services/api';
 import ChatWidget from '../components/ChatWidget';
 import './TeacherDashboard.css';
 
 const TeacherDashboard: React.FC = () => {
-    // State to toggle between Creation and Live view (mocking backend state)
-    const [hasActivePoll, setHasActivePoll] = useState(false);
+    const navigate = useNavigate();
+    const { socket, isConnected } = useSocket();
+    const { pollState, refetch } = usePollState(socket);
 
-    // Form State
     const [question, setQuestion] = useState('');
     const [duration, setDuration] = useState('60');
     const [options, setOptions] = useState([
         { id: 1, text: '', isCorrect: false },
         { id: 2, text: '', isCorrect: false }
     ]);
+    const [creating, setCreating] = useState(false);
+
+    const { formattedTime } = usePollTimer({
+        startedAt: pollState.status === 'ACTIVE' ? pollState.startedAt || null : null,
+        duration: pollState.duration || 0,
+        serverTime: pollState.serverTime
+    });
+
+    const hasActivePoll = pollState.status === 'ACTIVE';
 
     const handleOptionChange = (id: number, field: 'text' | 'isCorrect', value: string | boolean) => {
         setOptions(options.map(opt => {
             if (opt.id === id) {
                 return { ...opt, [field]: value };
-            }
-            if (field === 'isCorrect' && value === true) {
-                // Uncheck others if single choice (assuming single correct for now, though design allows multiple? Design uses radio for Yes/No per row, but logically usually one correct. 
-                // Wait, design says "Is it Correct? ( ) Yes ( ) No" per row. This implies multiple could be correct or it's just a boolean per option. 
-                // Technical doc doesn't specify. I'll treat them independent.)
-                return opt;
             }
             return opt;
         }));
@@ -33,9 +41,55 @@ const TeacherDashboard: React.FC = () => {
         setOptions([...options, { id: Date.now(), text: '', isCorrect: false }]);
     };
 
-    const handleAskQuestion = () => {
-        if (!question.trim()) return;
-        setHasActivePoll(true);
+    const handleAskQuestion = async () => {
+        if (!question.trim()) {
+            alert('Please enter a question');
+            return;
+        }
+
+        const validOptions = options.filter(opt => opt.text.trim());
+        if (validOptions.length < 2) {
+            alert('Please provide at least 2 options');
+            return;
+        }
+
+        setCreating(true);
+        try {
+            const pollData = await apiService.createPoll({
+                question: question.trim(),
+                options: validOptions.map(opt => opt.text.trim()),
+                duration: parseInt(duration)
+            });
+
+            // Emit poll:start event via socket
+            if (socket) {
+                socket.emit('poll:start', {
+                    pollId: pollData.pollId,
+                    question: pollData.question,
+                    options: pollData.options,
+                    startedAt: pollData.startedAt,
+                    duration: pollData.duration
+                });
+            }
+
+            // Refetch poll state
+            await refetch();
+
+            // Reset form
+            setQuestion('');
+            setOptions([
+                { id: 1, text: '', isCorrect: false },
+                { id: 2, text: '', isCorrect: false }
+            ]);
+        } catch (error: any) {
+            alert(error.response?.data?.error || 'Failed to create poll');
+        } finally {
+            setCreating(false);
+        }
+    };
+
+    const handleViewHistory = () => {
+        navigate('/teacher/history');
     };
 
     return (
@@ -64,6 +118,7 @@ const TeacherDashboard: React.FC = () => {
                                     <option value="30">30 seconds</option>
                                     <option value="60">60 seconds</option>
                                     <option value="90">90 seconds</option>
+                                    <option value="120">120 seconds</option>
                                 </select>
                             </div>
                             <textarea
@@ -71,9 +126,9 @@ const TeacherDashboard: React.FC = () => {
                                 placeholder="Type your question here..."
                                 value={question}
                                 onChange={(e) => setQuestion(e.target.value)}
-                                maxLength={100}
+                                maxLength={200}
                             />
-                            <div className="char-count">{question.length}/100</div>
+                            <div className="char-count">{question.length}/200</div>
                         </div>
 
                         <div className="options-section">
@@ -124,8 +179,12 @@ const TeacherDashboard: React.FC = () => {
                         </div>
 
                         <div className="form-footer">
-                            <button className="ask-question-btn" onClick={handleAskQuestion}>
-                                Ask Question
+                            <button
+                                className="ask-question-btn"
+                                onClick={handleAskQuestion}
+                                disabled={creating}
+                            >
+                                {creating ? 'Creating...' : 'Ask Question'}
                             </button>
                         </div>
                     </div>
@@ -134,50 +193,47 @@ const TeacherDashboard: React.FC = () => {
                 /* Live Monitor View */
                 <div className="live-view">
                     <div className="live-header-actions">
-                        <button className="view-history-btn">👁 View Poll history</button>
+                        <button className="view-history-btn" onClick={handleViewHistory}>
+                            👁 View Poll history
+                        </button>
                     </div>
 
                     <div className="question-card">
                         <div className="question-header">
                             <span className="q-label">Question</span>
-                            {/* Timer could go here */}
+                            <span className="timer">⏱ {formattedTime}</span>
                         </div>
 
                         <div className="question-text-box">
-                            {question || "Which planet is known as the Red Planet?"}
+                            {pollState.question}
                         </div>
 
                         <div className="results-list">
-                            {/* Mocking results for display using current options or defaults */}
-                            {(options.length > 0 ? options : [
-                                { id: 1, text: 'Mars', isCorrect: true },
-                                { id: 2, text: 'Venus', isCorrect: false },
-                                { id: 3, text: 'Jupiter', isCorrect: false },
-                                { id: 4, text: 'Saturn', isCorrect: false }
-                            ]).map((opt, idx) => (
-                                <div key={opt.id} className="result-row">
-                                    <div className="result-bar-bg">
-                                        <div
-                                            className="result-bar-fill"
-                                            style={{ width: idx === 0 ? '75%' : idx === 3 ? '15%' : '5%' }}
-                                        ></div>
-                                        <div className="result-content">
-                                            <div className="opt-marker">{idx + 1}</div>
-                                            <span className="opt-text">{opt.text}</span>
-                                            <span className="opt-percent">
-                                                {idx === 0 ? '75%' : idx === 3 ? '15%' : '5%'}
-                                            </span>
+                            {pollState.options?.map((opt, idx) => {
+                                const total = pollState.options?.reduce((sum, o) => sum + o.voteCount, 0) || 1;
+                                const percent = total > 0 ? Math.round((opt.voteCount / total) * 100) : 0;
+
+                                return (
+                                    <div key={opt.id} className="result-row">
+                                        <div className="result-bar-bg">
+                                            <div
+                                                className="result-bar-fill"
+                                                style={{ width: `${percent}%` }}
+                                            ></div>
+                                            <div className="result-content">
+                                                <div className="opt-marker">{idx + 1}</div>
+                                                <span className="opt-text">{opt.text}</span>
+                                                <span className="opt-percent">{percent}%</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
 
                     <div className="live-footer">
-                        <button className="ask-new-btn" onClick={() => setHasActivePoll(false)}>
-                            + Ask a new question
-                        </button>
+                        <p className="waiting-text">Poll is active. Results update in real-time.</p>
                     </div>
                 </div>
             )}

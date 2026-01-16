@@ -1,21 +1,25 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { usePollContext } from '../context/PollContext';
 import './StudentEntry.css';
 
 const StudentEntry: React.FC = () => {
     const [name, setName] = useState('');
     const navigate = useNavigate();
+    const { setStudentInfo } = usePollContext();
 
     const handleContinue = (e: React.FormEvent) => {
         e.preventDefault();
         if (!name.trim()) return;
 
-        // Generate UUID if not exists or just generate new one for new session?
-        // Doc says: "Generate studentId (UUID) -> Store in sessionStorage"
+        // Generate UUID for student
         const studentId = crypto.randomUUID();
 
-        sessionStorage.setItem('studentId', studentId);
-        sessionStorage.setItem('studentName', name.trim());
+        // Store in context (which also stores in sessionStorage)
+        setStudentInfo({
+            id: studentId,
+            name: name.trim()
+        });
 
         navigate('/student/poll');
     };

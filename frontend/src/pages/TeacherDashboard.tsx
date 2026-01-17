@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { usePollContext } from '../context/PollContext';
 import { useSocket } from '../hooks/useSocket';
 import { usePollState } from '../hooks/usePollState';
 import { usePollTimer } from '../hooks/usePollTimer';
@@ -7,8 +9,32 @@ import ChatWidget from '../components/ChatWidget';
 import './TeacherDashboard.css';
 
 const TeacherDashboard: React.FC = () => {
+    const navigate = useNavigate();
+    const { studentInfo, setStudentInfo } = usePollContext();
     const { socket, isConnected } = useSocket();
     const { pollState, refetch } = usePollState(socket);
+
+    // Security Guard: Prevent students from accessing the teacher dashboard
+    React.useEffect(() => {
+        const verifySession = async () => {
+            if (studentInfo) {
+                try {
+                    const response = await apiService.validateStudentSession(studentInfo.id);
+                    if (response.valid) {
+                        navigate('/student/poll');
+                    } else {
+                        // Clear invalid session
+                        setStudentInfo(null);
+                    }
+                } catch (error) {
+                    console.error('Session validation failed:', error);
+                    setStudentInfo(null);
+                }
+            }
+        };
+        verifySession();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const [question, setQuestion] = useState('');
     const [duration, setDuration] = useState('60');

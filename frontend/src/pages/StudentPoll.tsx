@@ -30,6 +30,29 @@ const StudentPoll: React.FC = () => {
         }
     }, [studentInfo, navigate]);
 
+    // Server as Source of Truth: Check if already kicked on mount
+    useEffect(() => {
+        const verifyKickedStatus = async () => {
+            if (studentInfo) {
+                try {
+                    const response = await apiService.validateStudentSession(studentInfo.id);
+                    if (!response.valid) {
+                        setIsKicked(true);
+                    }
+                } catch (error: any) {
+                    // If 403 (Kicked), show kicked screen
+                    if (error.response?.status === 403) {
+                        setIsKicked(true);
+                    } else if (error.response?.status === 404) {
+                        // If not found, clear and redirect to join
+                        navigate('/student/join');
+                    }
+                }
+            }
+        };
+        verifyKickedStatus();
+    }, [studentInfo, navigate]);
+
     // Register student via socket
     useEffect(() => {
         if (socket && isConnected && studentInfo) {

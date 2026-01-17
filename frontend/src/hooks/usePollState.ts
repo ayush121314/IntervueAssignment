@@ -32,8 +32,7 @@ export const usePollState = (socket: Socket | null) => {
     useEffect(() => {
         if (!socket) return;
 
-        // Poll started
-        socket.on('poll:start', (data: any) => {
+        const handlePollStart = (data: any) => {
             setPollState({
                 status: 'ACTIVE',
                 pollId: data.pollId,
@@ -43,10 +42,9 @@ export const usePollState = (socket: Socket | null) => {
                 duration: data.duration,
                 serverTime: data.serverTime || new Date().toISOString()
             });
-        });
+        };
 
-        // Poll ended
-        socket.on('poll:end', (data: any) => {
+        const handlePollEnd = (data: any) => {
             setPollState({
                 status: 'ENDED',
                 pollId: data.pollId,
@@ -55,25 +53,28 @@ export const usePollState = (socket: Socket | null) => {
                 resultsRemaining: data.resultsRemaining,
                 finalResults: true as any
             });
-        });
+        };
 
-        // Poll idle (results window over)
-        socket.on('poll:idle', () => {
+        const handlePollIdle = () => {
             setPollState({ status: 'IDLE' });
-        });
+        };
 
-        // Poll updated (live vote counts)
-        socket.on('poll:update', (data: any) => {
+        const handlePollUpdate = (data: any) => {
             if (data.status === 'ACTIVE' || data.status === 'ENDED') {
                 setPollState(data as PollStateResponse);
             }
-        });
+        };
+
+        socket.on('poll:start', handlePollStart);
+        socket.on('poll:end', handlePollEnd);
+        socket.on('poll:idle', handlePollIdle);
+        socket.on('poll:update', handlePollUpdate);
 
         return () => {
-            socket.off('poll:start');
-            socket.off('poll:end');
-            socket.off('poll:idle');
-            socket.off('poll:update');
+            socket.off('poll:start', handlePollStart);
+            socket.off('poll:end', handlePollEnd);
+            socket.off('poll:idle', handlePollIdle);
+            socket.off('poll:update', handlePollUpdate);
         };
     }, [socket]);
 

@@ -32,12 +32,14 @@ const TeacherDashboard: React.FC = () => {
     React.useEffect(() => {
         if (!socket) return;
 
-        socket.on('participants:update', (data: any[]) => {
+        const handleParticipantsUpdate = (data: any[]) => {
             setParticipants(data);
-        });
+        };
+
+        socket.on('participants:update', handleParticipantsUpdate);
 
         return () => {
-            socket.off('participants:update');
+            socket.off('participants:update', handleParticipantsUpdate);
         };
     }, [socket]);
 
@@ -139,11 +141,7 @@ const TeacherDashboard: React.FC = () => {
             {hasActivePoll ? (
                 /* Live Monitor View */
                 <div className="live-view">
-                    <div className="live-header-actions">
-                        <button className="view-history-btn" onClick={handleViewHistory}>
-                            👁 View Poll history
-                        </button>
-                    </div>
+                    {/* View Poll history hidden during active poll as per request */}
 
                     <div className="question-card">
                         <div className="question-header">

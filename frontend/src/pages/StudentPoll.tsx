@@ -44,12 +44,14 @@ const StudentPoll: React.FC = () => {
     useEffect(() => {
         if (!socket) return;
 
-        socket.on('student:kicked', () => {
+        const handleStudentKicked = () => {
             setIsKicked(true);
-        });
+        };
+
+        socket.on('student:kicked', handleStudentKicked);
 
         return () => {
-            socket.off('student:kicked');
+            socket.off('student:kicked', handleStudentKicked);
         };
     }, [socket]);
 
@@ -116,6 +118,7 @@ const StudentPoll: React.FC = () => {
                 <div className="brand-badge"><span>✨</span> Intervue Poll</div>
                 <div className="loader-spinner"></div>
                 <h2 className="waiting-text">Wait for the teacher to ask questions..</h2>
+                <ChatWidget role="STUDENT" />
             </div>
         );
     }

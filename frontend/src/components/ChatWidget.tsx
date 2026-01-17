@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSocket } from '../hooks/useSocket';
 import { usePollContext } from '../context/PollContext';
+import { usePollState } from '../hooks/usePollState';
 import './ChatWidget.css';
 
 interface ChatWidgetProps {
@@ -29,6 +30,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ role }) => {
     const [participants, setParticipants] = useState<Participant[]>([]);
     const { socket } = useSocket();
     const { studentInfo } = usePollContext();
+    const { pollState } = usePollState(socket);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // Fetch chat history on mount
@@ -42,22 +44,26 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ role }) => {
     useEffect(() => {
         if (!socket) return;
 
-        socket.on('chat:history', (history: Message[]) => {
+        const handleChatHistory = (history: Message[]) => {
             setMessages(history);
-        });
+        };
 
-        socket.on('chat:message', (message: Message) => {
+        const handleChatMessage = (message: Message) => {
             setMessages(prev => [...prev, message]);
-        });
+        };
 
-        socket.on('participants:update', (updatedParticipants: Participant[]) => {
+        const handleParticipantsUpdate = (updatedParticipants: Participant[]) => {
             setParticipants(updatedParticipants);
-        });
+        };
+
+        socket.on('chat:history', handleChatHistory);
+        socket.on('chat:message', handleChatMessage);
+        socket.on('participants:update', handleParticipantsUpdate);
 
         return () => {
-            socket.off('chat:history');
-            socket.off('chat:message');
-            socket.off('participants:update');
+            socket.off('chat:history', handleChatHistory);
+            socket.off('chat:message', handleChatMessage);
+            socket.off('participants:update', handleParticipantsUpdate);
         };
     }, [socket]);
 
@@ -83,6 +89,11 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ role }) => {
 
     const handleKick = (studentId: string) => {
         if (!socket) return;
+
+        if (pollState.status === 'ACTIVE') {
+            alert('Cannot kick students while a poll is active');
+            return;
+        }
 
         if (confirm('Are you sure you want to kick this student?')) {
             socket.emit('student:kick', { studentId });
@@ -149,6 +160,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ role }) => {
                                                 <button
                                                     className="kick-btn"
                                                     onClick={() => handleKick(p.id)}
+                                                    title={pollState.status === 'ACTIVE' ? "Cannot kick students while a poll is active" : ""}
                                                 >
                                                     Kick out
                                                 </button>

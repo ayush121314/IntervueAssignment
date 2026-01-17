@@ -63,8 +63,14 @@ export const setupPollSocket = (io: Server) => {
         // Teacher kicks a student
         socket.on('student:kick', async (data: { studentId: string }) => {
             try {
-                const student = await studentService.getStudentById(data.studentId);
+                // Backend Verification: Ensure no poll is active
+                const currentPoll = await pollService.getCurrentPoll();
+                if (currentPoll.status === 'ACTIVE') {
+                    console.log(`Kick rejected: Poll is active. StudentId: ${data.studentId}`);
+                    return; // Fail silently or could emit error message
+                }
 
+                const student = await studentService.getStudentById(data.studentId);
                 if (student) {
                     await studentService.kickStudent(data.studentId);
 

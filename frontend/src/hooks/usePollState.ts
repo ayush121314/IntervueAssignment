@@ -52,13 +52,19 @@ export const usePollState = (socket: Socket | null) => {
                 pollId: data.pollId,
                 question: data.question,
                 options: data.options,
-                finalResults: true as any // Hack for simplicity in this context
+                resultsRemaining: data.resultsRemaining,
+                finalResults: true as any
             });
+        });
+
+        // Poll idle (results window over)
+        socket.on('poll:idle', () => {
+            setPollState({ status: 'IDLE' });
         });
 
         // Poll updated (live vote counts)
         socket.on('poll:update', (data: any) => {
-            if (data.status === 'ACTIVE') {
+            if (data.status === 'ACTIVE' || data.status === 'ENDED') {
                 setPollState(data as PollStateResponse);
             }
         });
@@ -66,6 +72,7 @@ export const usePollState = (socket: Socket | null) => {
         return () => {
             socket.off('poll:start');
             socket.off('poll:end');
+            socket.off('poll:idle');
             socket.off('poll:update');
         };
     }, [socket]);

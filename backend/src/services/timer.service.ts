@@ -37,8 +37,36 @@ class TimerService {
                         voteCount: opt.voteCount,
                         isCorrect: opt.isCorrect
                     })),
-                    finalResults: true
+                    finalResults: true,
+                    resultsRemaining: 5
                 });
+
+                // Broadcast countdown every second for 5 seconds
+                let remaining = 5;
+                const countdownInterval = setInterval(() => {
+                    remaining -= 1;
+                    if (remaining <= 0) {
+                        clearInterval(countdownInterval);
+                        if (this.io) {
+                            this.io.emit('poll:idle');
+                        }
+                    } else {
+                        if (this.io) {
+                            this.io.emit('poll:update', {
+                                status: 'ENDED',
+                                pollId: poll._id.toString(),
+                                question: poll.question,
+                                options: poll.options.map(opt => ({
+                                    id: opt._id.toString(),
+                                    text: opt.text,
+                                    voteCount: opt.voteCount,
+                                    isCorrect: opt.isCorrect
+                                })),
+                                resultsRemaining: remaining
+                            });
+                        }
+                    }
+                }, 1000);
             }
 
             // Clean up timer

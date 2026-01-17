@@ -44,7 +44,7 @@ const TeacherDashboard: React.FC = () => {
     const hasActivePoll = pollState.status === 'ACTIVE';
     const totalVotes = pollState.options?.reduce((sum, opt) => sum + opt.voteCount, 0) || 0;
     const activeParticipants = participants.length;
-    const allVoted = activeParticipants > 0 && totalVotes >= activeParticipants;
+    const allVoted = activeParticipants === 0 || totalVotes >= activeParticipants;
 
     const handleOptionChange = (id: number, field: 'text' | 'isCorrect', value: string | boolean) => {
         setOptions(options.map(opt => {
@@ -148,7 +148,12 @@ const TeacherDashboard: React.FC = () => {
                     <div className="question-card">
                         <div className="question-header">
                             <span className="q-label">Question</span>
-                            <span className="timer">⏱ {formattedTime}</span>
+                            <span className="timer">
+                                {pollState.status === 'ENDED'
+                                    ? `RESULTS CLOSING IN ${pollState.resultsRemaining || 0}s`
+                                    : `⏱ ${formattedTime}`
+                                }
+                            </span>
                         </div>
 
                         <div className="question-text-box">

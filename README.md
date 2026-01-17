@@ -39,62 +39,80 @@ A production-ready, real-time polling application built with the **MERN** stack 
 ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
 ![Mongoose](https://img.shields.io/badge/Mongoose-880000?style=for-the-badge&logo=mongoose&logoColor=white)
 
-    
+---
 
 ## 🚀 Getting Started
 
-### Prerequisites
+You can run this project in three ways: **Manually**, **Locally via Docker (Zero-Config)**, or **Production/EC2 via Docker**.
+
+### 1️⃣ Manual Setup (Local Development)
+
+#### Prerequisites
 - Node.js (v18+)
-- MongoDB (Local or Atlas)
+- MongoDB (running locally on port 27017)
 
-### Setup & Installation
-
+#### Steps
 1. **Clone the repository**
    ```bash
    git clone https://github.com/ayush121314/IntervueAssignment
    cd IntervueAssignment
    ```
 
-2. **Configure Environment**
-   - **Backend**: Create `backend/.env` (see `backend/.env.example`)
-   - **Frontend**: Create `frontend/.env` (see `frontend/.env.example`)
+2. **Backend Configuration**
+   - Navigate to `backend/`
+   - Create `.env` based on `.env.example`:
+     ```env
+     PORT=4000
+     MONGO_URI=mongodb://localhost:27017/polling_db
+     NODE_ENV=development
+     ```
+   - Install & Run:
+     ```bash
+     npm install
+     npm run dev
+     ```
 
-3. **Install & Run Backend**
+3. **Frontend Configuration**
+   - Navigate to `frontend/`
+   - Create `.env` based on `.env.example`:
+     ```env
+     VITE_API_URL=http://localhost:4000
+     VITE_SOCKET_URL=http://localhost:4000
+     ```
+   - Install & Run:
+     ```bash
+     npm install
+     npm run dev
+     ```
+
+---
+
+### 2️⃣ Docker Compose Local (Zero-Config)
+This is the fastest way to get everything running locally with an internal MongoDB container.
+
+1. **Ensure Docker is running.**
+2. **Run the local compose file:**
    ```bash
-   cd backend
-   npm install
-   npm run dev
+   docker-compose -f docker-compose-local.yml up --build
    ```
+3. **Access the application:**
+   - **Frontend**: [http://localhost:5173](http://localhost:5173)
+   - **Backend**: [http://localhost:4000](http://localhost:4000)
+   - **MongoDB**: Internal to Docker (no setup required).
 
-4. **Install & Run Frontend**
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
+---
 
-### 🐳 Deployment with Docker (Recommended for EC2)
-
-For a fast, production-ready setup using Docker Compose:
+### 3️⃣ Production / EC2 Deployment
+Use this for deploying to a cloud server like EC2 where you might use a managed MongoDB (like Atlas) or want specific IP bindings.
 
 1. **Prepare Environment Variables**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your EC2 Public IP or Domain
-   ```
-
-2. **Run with Docker Compose**
+   - Configure `backend/.env` with your production `MONGO_URI`.
+2. **Run Docker Compose:**
    ```bash
    docker-compose up --build -d
    ```
-
-3. **Verify Containers**
-   ```bash
-   docker ps
-   ```
-   - **Frontend**: Accessible at `http://your-ip:5173`
-   - **Backend**: API running at `http://your-ip:5001`
-   - **MongoDB**: Connects to your external cluster (specified in `.env`).
+   > [!IMPORTANT]
+   > The `docker-compose.yml` is configured with specific build arguments for API and Socket URLs. Make sure to update the IP/Domain in the `args` section of `docker-compose.yml` if your server IP changes.
 
 ---
 
@@ -107,9 +125,5 @@ For a fast, production-ready setup using Docker Compose:
 - [x] **State Persistence**: Refresh the browser during an active poll.
 - [x] **Late Joining**: Join a poll halfway through to see synchronized timers.
 - [x] **Integrity**: Attempt to vote twice with the same student ID.
-
----
-
-
 
 ---

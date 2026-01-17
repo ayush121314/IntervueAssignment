@@ -18,6 +18,7 @@ export type PollStateResponse = {
     duration?: number;
     serverTime?: string;
     finalResults?: boolean;
+    resultsRemaining?: number;
 }
 
 export type CreatePollData = {

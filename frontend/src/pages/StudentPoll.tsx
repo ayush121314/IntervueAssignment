@@ -130,7 +130,10 @@ const StudentPoll: React.FC = () => {
                 <div className="poll-header-row">
                     <span className="q-number">Question</span>
                     <span className={`timer ${(isExpired || isPollEnded) ? 'expired' : ''}`}>
-                        {isPollEnded ? 'POLL ENDED' : `⏱ ${formattedTime}`}
+                        {isPollEnded
+                            ? `RESULTS CLOSING IN ${pollState.resultsRemaining || 0}s`
+                            : `⏱ ${formattedTime}`
+                        }
                     </span>
                 </div>
 

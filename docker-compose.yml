@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   backend:
@@ -7,9 +7,10 @@ services:
       dockerfile: Dockerfile
     container_name: live-polling-backend
     ports:
-      - "5001:5001"
+      - "4000:4000"
     env_file:
       - .env
+    restart: unless-stopped
     networks:
       - polling-network
 
@@ -18,13 +19,14 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=${VITE_API_URL}
-        - VITE_SOCKET_URL=${VITE_SOCKET_URL}
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_SOCKET_URL: ${VITE_SOCKET_URL}
     container_name: live-polling-frontend
     ports:
       - "5173:5173"
     depends_on:
       - backend
+    restart: unless-stopped
     networks:
       - polling-network
 

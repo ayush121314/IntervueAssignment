@@ -3,12 +3,35 @@ import { useNavigate } from 'react-router-dom';
 import { usePollContext } from '../context/PollContext';
 import './StudentEntry.css';
 import { nanoid } from 'nanoid';
+import apiService from '../services/api';
 
 
 const StudentEntry: React.FC = () => {
     const [name, setName] = useState('');
     const navigate = useNavigate();
-    const { setStudentInfo } = usePollContext();
+    const { studentInfo, setStudentInfo } = usePollContext();
+
+    // If student info already exists in session, check with server (on mount only)
+    React.useEffect(() => {
+        const verifySession = async () => {
+            if (studentInfo) {
+                try {
+                    const response = await apiService.validateStudentSession(studentInfo.id);
+                    if (response.valid) {
+                        navigate('/student/poll');
+                    } else {
+                        // Clear invalid session
+                        setStudentInfo(null);
+                    }
+                } catch (error) {
+                    console.error('Session validation failed:', error);
+                    setStudentInfo(null);
+                }
+            }
+        };
+        verifySession();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleContinue = (e: React.FormEvent) => {
         e.preventDefault();

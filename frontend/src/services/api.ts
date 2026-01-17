@@ -67,6 +67,11 @@ class ApiService {
         const response = await api.get<PollHistoryItem[]>('/poll/history');
         return response.data;
     }
+
+    async validateStudentSession(studentId: string): Promise<{ valid: boolean; student?: { id: string, name: string } }> {
+        const response = await api.get(`/student/session/${studentId}`);
+        return response.data;
+    }
 }
 
 export default new ApiService();

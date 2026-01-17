@@ -8,6 +8,7 @@ import pollRoutes from './routes/poll.routes';
 import voteRoutes from './routes/vote.routes';
 import { setupPollSocket } from './sockets/poll.socket';
 import { setupChatSocket } from './sockets/chat.socket';
+import studentRoutes from './routes/student.routes';
 import timerService from './services/timer.service';
 
 // Load environment variables
@@ -50,6 +51,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // Routes
 app.use('/api/poll', pollRoutes);
 app.use('/api/poll', voteRoutes);
+app.use('/api/student', studentRoutes);
 
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {

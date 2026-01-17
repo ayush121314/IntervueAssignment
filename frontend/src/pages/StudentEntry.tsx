@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePollContext } from '../context/PollContext';
 import './StudentEntry.css';
-import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
 
 
 const StudentEntry: React.FC = () => {
@@ -15,7 +15,7 @@ const StudentEntry: React.FC = () => {
         if (!name.trim()) return;
 
         // Generate UUID for student
-        const studentId = uuidv4();
+        const studentId = nanoid();
 
         // Store in context (which also stores in sessionStorage)
         setStudentInfo({

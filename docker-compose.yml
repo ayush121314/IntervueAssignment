@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: live-polling-backend
+    ports:
+      - "5001:5001"
+    env_file:
+      - .env
+    networks:
+      - polling-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL}
+        - VITE_SOCKET_URL=${VITE_SOCKET_URL}
+    container_name: live-polling-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - polling-network
+
+networks:
+  polling-network:
+    driver: bridge

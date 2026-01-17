@@ -73,6 +73,29 @@ A production-ready, real-time polling application built with the **MERN** stack 
    npm run dev
    ```
 
+### 🐳 Deployment with Docker (Recommended for EC2)
+
+For a fast, production-ready setup using Docker Compose:
+
+1. **Prepare Environment Variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your EC2 Public IP or Domain
+   ```
+
+2. **Run with Docker Compose**
+   ```bash
+   docker-compose up --build -d
+   ```
+
+3. **Verify Containers**
+   ```bash
+   docker ps
+   ```
+   - **Frontend**: Accessible at `http://your-ip:5173`
+   - **Backend**: API running at `http://your-ip:5001`
+   - **MongoDB**: Connects to your external cluster (specified in `.env`).
+
 ---
 
 ## 🧪 Verification & Testing

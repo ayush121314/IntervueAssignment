@@ -35,6 +35,20 @@ export const setupPollSocket = (io: Server) => {
             }
         });
 
+        // Request current participants list
+        socket.on('participants:get', async () => {
+            try {
+                const activeStudents = await studentService.getActiveStudents();
+                socket.emit('participants:update', activeStudents.map(s => ({
+                    id: s.studentId,
+                    name: s.name,
+                    joinedAt: s.joinedAt
+                })));
+            } catch (error) {
+                console.error('Error fetching participants:', error);
+            }
+        });
+
         // Vote submitted (emit real-time update)
         socket.on('vote:submit', async (data: { pollId: string; studentId: string; optionId: string }) => {
             try {

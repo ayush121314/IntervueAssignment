@@ -28,17 +28,17 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ role }) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [participants, setParticipants] = useState<Participant[]>([]);
-    const { socket } = useSocket();
+    const { socket, isConnected } = useSocket();
     const { studentInfo } = usePollContext();
     const { pollState } = usePollState(socket);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    // Fetch chat history on mount
     useEffect(() => {
-        if (socket && isOpen) {
+        if (socket && isConnected && isOpen) {
             socket.emit('chat:getHistory');
+            socket.emit('participants:get'); // Sync participants list on open
         }
-    }, [socket, isOpen]);
+    }, [socket, isConnected, isOpen]);
 
     // Listen to socket events
     useEffect(() => {

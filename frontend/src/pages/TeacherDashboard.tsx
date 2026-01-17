@@ -7,7 +7,7 @@ import ChatWidget from '../components/ChatWidget';
 import './TeacherDashboard.css';
 
 const TeacherDashboard: React.FC = () => {
-    const { socket } = useSocket();
+    const { socket, isConnected } = useSocket();
     const { pollState, refetch } = usePollState(socket);
 
     const [question, setQuestion] = useState('');
@@ -42,6 +42,12 @@ const TeacherDashboard: React.FC = () => {
             socket.off('participants:update', handleParticipantsUpdate);
         };
     }, [socket]);
+
+    React.useEffect(() => {
+        if (socket && isConnected) {
+            socket.emit('participants:get');
+        }
+    }, [socket, isConnected]);
 
     const hasActivePoll = pollState.status === 'ACTIVE';
     const totalVotes = pollState.options?.reduce((sum, opt) => sum + opt.voteCount, 0) || 0;

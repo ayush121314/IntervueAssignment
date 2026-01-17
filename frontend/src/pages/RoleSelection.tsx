@@ -2,9 +2,33 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './RoleSelection.css';
 
+import { usePollContext } from '../context/PollContext';
+import apiService from '../services/api';
+
 const RoleSelection: React.FC = () => {
     const [selectedRole, setSelectedRole] = useState<'STUDENT' | 'TEACHER' | null>(null);
     const navigate = useNavigate();
+    const { studentInfo, setStudentInfo } = usePollContext();
+
+    // Enforce Server Source of Truth: Redirect valid existing students to the poll
+    React.useEffect(() => {
+        const verifySession = async () => {
+            if (studentInfo) {
+                try {
+                    const response = await apiService.validateStudentSession(studentInfo.id);
+                    if (response.valid) {
+                        navigate('/student/poll');
+                    } else {
+                        setStudentInfo(null);
+                    }
+                } catch (error) {
+                    setStudentInfo(null);
+                }
+            }
+        };
+        verifySession();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleContinue = () => {
         if (selectedRole === 'STUDENT') {

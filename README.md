@@ -1,129 +1,186 @@
 # 🚀 Live Polling System
 
-A production-ready, real-time polling application built with the **MERN** stack and **Socket.IO**. Designed for resilience, scalability, and a seamless user experience.
+A production-ready, real-time polling application built with the **MERN** stack and **Socket.IO**. Designed for resilience, scalability, and a seamless multi-user experience.
 
 ---
 
-## 🌟 Key Features
+## 🌟 Features Overview
 
-### 👨‍🏫 Teacher Persona
-- **Advanced Poll Creation**: Create polls with multiple options and designate **correct answers** for educational tracking.
-- **Smart Monitoring**: Real-time progress bars with an **All Voted** detection system that enables poll closure only when every active student has participated.
-- **Session Governance**: A live **Participant Roster** with the ability to **kick disruptive students** instantly.
-- **Rich Analytics**: A dedicated history view showcasing card-based results, percentage distributions, and performance highlights.
+---
 
-### 🎓 Student Persona
-- **Integrated Social Features**: A floating **Live Chat** widget with real-time message history and a participant list.
-- **Dynamic UI States**: Seamless transition between "Waiting", "Voting", and "Result" modes with instant server-driven feedback.
-- **Governance Safeguards**: Instant feedback if removed from a session, with persistent "Kicked" state tracking.
-- **State Persistence**: Automatic re-sync of active polls and personal vote status, even after accidental browser crashes.
+## 👨‍🏫 Teacher Persona (Host)
 
-### 🛠️ Technical Resilience
-- **Atomic Operations**: Backend logic designed to prevent double-voting and race conditions during high-concurrency sessions.
-- **Server-Authoritative Timers**: Single source of truth for poll duration, ensuring late joiners see the exact same countdown as others.
-- **Modular Service Layer**: Clean separation of concerns (Chat, Student, Vote, and Timer services) for high maintainability.
+- Create live polls with multiple options
+- Mark **correct answers** for evaluation
+- View **live vote progress** with percentage breakdown
+- Automatic **All Voted** detection
+- Ability to **kick students** from a session
+- View poll history with analytics and performance insights
+- Can send messages to all students through chat
+
+---
+
+## 🎓 Student Persona (Participant)
+
+- Join live sessions instantly
+- Vote exactly **once per poll** (server-enforced)
+- Automatic state recovery after refresh or reconnect
+- Persistent **Kicked** state if removed by teacher
+- Can send messages to everyone through chat
+- See live progress bar and result after poll
+- Join mid-way during an active poll
+
+---
+
+## 🛠️ Technical Resilience
+
+- Atomic voting logic (prevents double voting)
+- Race-condition safe backend logic
+- Server-authoritative timers (late joiners see correct countdown)
+- Modular backend services:
+  - Poll Service
+  - Vote Service
+  - Chat Service
+  - Timer Service
+  - Participant Service
 
 ---
 
 ## 💻 Tech Stack
 
 ### Frontend
-![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![Socket.io](https://img.shields.io/badge/Socket.io-010101?style=for-the-badge&logo=socket.io&logoColor=white)
+- React
+- TypeScript
+- Vite
+- Socket.IO Client
 
 ### Backend
-![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
-![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)
-![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
-![Mongoose](https://img.shields.io/badge/Mongoose-880000?style=for-the-badge&logo=mongoose&logoColor=white)
+- Node.js
+- Express
+- MongoDB Atlas
+- Mongoose
+- Socket.IO
 
 ---
 
 ## 🚀 Getting Started
 
-You can run this project in three ways: **Manually**, **Locally via Docker (Zero-Config)**, or **Production/EC2 via Docker**.
+This project can be run using **three supported methods**:
 
-### 1️⃣ Manual Setup (Local Development)
+1. Manual Setup (Local Development)
+2. Docker Compose (Local)
+3. Production / EC2 Deployment (Docker Compose)
 
-#### Prerequisites
+---
+
+## 1️⃣ Manual Setup (Local Development)
+
+### Prerequisites
 - Node.js (v18+)
-- MongoDB (running locally on port 27017)
-
-#### Steps
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/ayush121314/IntervueAssignment
-   cd IntervueAssignment
-   ```
-
-2. **Backend Configuration**
-   - Navigate to `backend/`
-   - Create `.env` based on `.env.example`:
-     ```env
-     PORT=4000
-     MONGO_URI=mongodb://localhost:27017/polling_db
-     NODE_ENV=development
-     ```
-   - Install & Run:
-     ```bash
-     npm install
-     npm run dev
-     ```
-
-3. **Frontend Configuration**
-   - Navigate to `frontend/`
-   - Create `.env` based on `.env.example`:
-     ```env
-     VITE_API_URL=http://localhost:4000
-     VITE_SOCKET_URL=http://localhost:4000
-     ```
-   - Install & Run:
-     ```bash
-     npm install
-     npm run dev
-     ```
+- MongoDB Atlas
 
 ---
 
-### 2️⃣ Docker Compose Local (Zero-Config)
-This is the fastest way to get everything running locally with an internal MongoDB container.
+### Steps
 
-1. **Ensure Docker is running.**
-2. **Run the local compose file:**
-   ```bash
-   docker-compose -f docker-compose-local.yml up --build
-   ```
-3. **Access the application:**
-   - **Frontend**: [http://localhost:5173](http://localhost:5173)
-   - **Backend**: [http://localhost:4000](http://localhost:4000)
-   - **MongoDB**: Internal to Docker (no setup required).
+#### 1. Clone the Repository
+```bash
+git clone https://github.com/ayush121314/IntervueAssignment
+cd IntervueAssignment
+```
+
+#### 2. Backend Setup
+
+```bash
+cd backend
+```
+
+- Create `.env` using `backend/.env.example`
+- Install dependencies and start the server:
+
+```bash
+npm install
+npm run dev
+```
+
+#### 3. Frontend Setup
+
+```bash
+cd frontend
+```
+
+- Create `.env` using `frontend/.env.example`
+- Install dependencies and start the dev server:
+
+```bash
+npm install
+npm run dev
+```
 
 ---
 
-### 3️⃣ Production / EC2 Deployment
-Use this for deploying to a cloud server like EC2 where you might use a managed MongoDB (like Atlas) or want specific IP bindings.
+## 2️⃣ Docker Compose (Local)
 
-1. **Prepare Environment Variables**
-   - Configure `backend/.env` with your production `MONGO_URI`.
-2. **Run Docker Compose:**
-   ```bash
-   docker-compose up --build -d
-   ```
-   > [!IMPORTANT]
-   > The `docker-compose.yml` is configured with specific build arguments for API and Socket URLs. Make sure to update the IP/Domain in the `args` section of `docker-compose.yml` if your server IP changes.
+Runs the entire application locally using Docker.
+
+### Steps
+
+1. Ensure Docker is running
+2. Create `backend/.env` using `backend/.env.example`
+3. Run:
+
+```bash
+docker-compose -f docker-compose-local.yml up --build
+```
+
+### Access
+
+- **Frontend:** http://localhost:5173
+- **Backend:** http://localhost:4000
 
 ---
 
-## 🧪 Verification & Testing
+## 3️⃣ Production / EC2 Deployment
 
-> [!NOTE]
-> The application includes a comprehensive manual testing checklist to ensure all resilience features are operational.
+Intended for cloud deployment using a managed MongoDB cluster.
 
-- [x] **Real-time Sync**: Open two browser windows to witness instant updates.
-- [x] **State Persistence**: Refresh the browser during an active poll.
-- [x] **Late Joining**: Join a poll halfway through to see synchronized timers.
-- [x] **Integrity**: Attempt to vote twice with the same student ID.
+### Steps
+
+1. Create `backend/.env` using `backend/.env.example` and update production values
+2. Run:
+
+```bash
+docker-compose up --build -d
+```
+
+⚠️ **Note:** If the server IP or domain changes, update the frontend build arguments in `docker-compose.yml` and rebuild.
+
+---
+
+## 🧪 Verification & Testing Checklist
+
+- Real-time updates across multiple clients
+- State persistence on refresh
+- Late joiner timer synchronization
+- Double voting prevention
+- Kick propagation in real time
+- Live chat message sync
+
+---
+
+## 📌 Notes
+
+- `.env.example` files are provided for both frontend and backend
+- Actual `.env` files must never be committed
+- All configuration is environment-driven
+- Designed to be production-ready and cloud-agnostic
+
+---
+
+## 👨‍💻 Author
+
+**Ayush**
+
+- GitHub: [@ayush121314](https://github.com/ayush121314)
 
 ---

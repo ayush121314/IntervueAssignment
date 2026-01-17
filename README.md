@@ -1,242 +1,92 @@
-# Live Polling System
+# 🚀 Live Polling System
 
-A production-ready, real-time polling application built with the MERN stack (MongoDB, Express, React, Node.js) and Socket.IO.
+A production-ready, real-time polling application built with the **MERN** stack and **Socket.IO**. Designed for resilience, scalability, and a seamless user experience.
 
-## 🌟 Features
-
-### Core Functionality
-- ✅ **Real-time Polling**: Create and participate in live polls with instant updates
-- ✅ **State Recovery**: Polls survive page refreshes - resume exactly where you left off
-- ✅ **Timer Synchronization**: Late joiners see accurate remaining time
-- ✅ **Vote Integrity**: Server-side validation prevents double voting
-- ✅ **Poll History**: View past polls with final results
-- ✅ **Live Chat**: Real-time messaging between teachers and students
-- ✅ **Participant Management**: Teachers can view and manage active students
+---
 
-### Technical Highlights
-- 🏗️ **Clean Architecture**: Controller-Service pattern with strict separation of concerns
-- 🔄 **Real-time Updates**: Socket.IO for instant data synchronization
-- 💾 **Data Persistence**: MongoDB with Mongoose ODM
-- ⏱️ **Server-Owned Timers**: Single source of truth for poll timing
-- 🎯 **TypeScript**: Full type safety across frontend and backend
-- 🔒 **Data Integrity**: Unique indexes and server-side validation
-
-## 📋 Prerequisites
+## 🌟 Key Features
 
-- **Node.js** (v18 or higher)
-- **MongoDB** (running locally or remote connection)
-- **npm** or **yarn**
+### 👨‍🏫 Teacher Persona
+- **Advanced Poll Creation**: Create polls with multiple options and designate **correct answers** for educational tracking.
+- **Smart Monitoring**: Real-time progress bars with an **All Voted** detection system that enables poll closure only when every active student has participated.
+- **Session Governance**: A live **Participant Roster** with the ability to **kick disruptive students** instantly.
+- **Rich Analytics**: A dedicated history view showcasing card-based results, percentage distributions, and performance highlights.
 
-## 🚀 Quick Start
+### 🎓 Student Persona
+- **Integrated Social Features**: A floating **Live Chat** widget with real-time message history and a participant list.
+- **Dynamic UI States**: Seamless transition between "Waiting", "Voting", and "Result" modes with instant server-driven feedback.
+- **Governance Safeguards**: Instant feedback if removed from a session, with persistent "Kicked" state tracking.
+- **State Persistence**: Automatic re-sync of active polls and personal vote status, even after accidental browser crashes.
 
-### 1. Clone the Repository
+### 🛠️ Technical Resilience
+- **Atomic Operations**: Backend logic designed to prevent double-voting and race conditions during high-concurrency sessions.
+- **Server-Authoritative Timers**: Single source of truth for poll duration, ensuring late joiners see the exact same countdown as others.
+- **Modular Service Layer**: Clean separation of concerns (Chat, Student, Vote, and Timer services) for high maintainability.
 
-```bash
-cd IntervueAssignment
-```
+---
 
-### 2. Set Up Backend
-
-```bash
-cd backend
-
-# Install dependencies (already done)
-npm install
+## 💻 Tech Stack
 
-# Configure environment variables
-# Edit .env file if needed (default values work for local development)
-
-# Start MongoDB (if running locally)
-# mongod
-
-# Start the backend server
-npm run dev
-```
+### Frontend
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Socket.io](https://img.shields.io/badge/Socket.io-010101?style=for-the-badge&logo=socket.io&logoColor=white)
 
-The backend will start on `http://localhost:5000`
+### Backend
+![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
+![Mongoose](https://img.shields.io/badge/Mongoose-880000?style=for-the-badge&logo=mongoose&logoColor=white)
 
-### 3. Set Up Frontend
+    
 
-```bash
-cd frontend
+## 🚀 Getting Started
 
-# Install dependencies (already done)
-npm install
+### Prerequisites
+- Node.js (v18+)
+- MongoDB (Local or Atlas)
 
-# Configure environment variables
-# Edit .env file if needed (default values work for local development)
+### Setup & Installation
 
-# Start the frontend
-npm run dev
-```
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/ayush121314/IntervueAssignment
+   cd IntervueAssignment
+   ```
 
-The frontend will start on `http://localhost:5173`
+2. **Configure Environment**
+   - **Backend**: Create `backend/.env` (see `backend/.env.example`)
+   - **Frontend**: Create `frontend/.env` (see `frontend/.env.example`)
 
-### 4. Access the Application
+3. **Install & Run Backend**
+   ```bash
+   cd backend
+   npm install
+   npm run dev
+   ```
 
-- Open `http://localhost:5173` in your browser
-- Choose **Teacher** or **Student** role
-- Start creating and participating in polls!
+4. **Install & Run Frontend**
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
 
-## 📁 Project Structure
+---
 
-```
-IntervueAssignment/
-├── backend/                    # Node.js + Express + TypeScript backend
-│   ├── src/
-│   │   ├── config/            # Database configuration
-│   │   ├── models/            # Mongoose models
-│   │   ├── services/          # Business logic layer
-│   │   ├── controllers/       # Request handlers
-│   │   ├── routes/            # API routes
-│   │   ├── sockets/           # Socket.IO handlers
-│   │   └── server.ts          # Main server file
-│   ├── .env                   # Environment variables
-│   └── package.json
-│
-├── frontend/                   # React + TypeScript frontend
-│   ├── src/
-│   │   ├── components/        # Reusable components
-│   │   ├── pages/             # Page components
-│   │   ├── hooks/             # Custom React hooks
-│   │   ├── context/           # React context
-│   │   ├── services/          # API service layer
-│   │   └── App.tsx
-│   ├── .env                   # Environment variables
-│   └── package.json
-│
-└── live_polling_system_fullstack_technical_documentation.md
-```
+## 🧪 Verification & Testing
 
-## 🔧 Environment Variables
+> [!NOTE]
+> The application includes a comprehensive manual testing checklist to ensure all resilience features are operational.
 
-### Backend (.env)
+- [x] **Real-time Sync**: Open two browser windows to witness instant updates.
+- [x] **State Persistence**: Refresh the browser during an active poll.
+- [x] **Late Joining**: Join a poll halfway through to see synchronized timers.
+- [x] **Integrity**: Attempt to vote twice with the same student ID.
 
-```env
-MONGODB_URI=mongodb://localhost:27017/live-polling
-PORT=5000
-CORS_ORIGIN=http://localhost:5173
-NODE_ENV=development
-```
+---
 
-### Frontend (.env)
 
-```env
-VITE_API_URL=http://localhost:5000
-VITE_SOCKET_URL=http://localhost:5000
-```
 
-## 📖 Usage Guide
-
-### For Teachers
-
-1. Select **Teacher** role on the home page
-2. Create a poll:
-   - Enter your question
-   - Add options (minimum 2)
-   - Set duration (30-120 seconds)
-   - Click "Ask Question"
-3. Monitor live results as students vote
-4. View poll history anytime
-
-### For Students
-
-1. Select **Student** role on the home page
-2. Enter your name
-3. Wait for teacher to start a poll
-4. Select your answer and submit
-5. View live results after voting
-
-## 🏗️ Architecture
-
-### Backend Architecture
-
-- **Routes** → **Controllers** → **Services** → **Database**
-- Socket handlers delegate to services (no business logic in handlers)
-- Server-side timer service manages poll expiration
-- MongoDB with unique indexes for data integrity
-
-### Frontend Architecture
-
-- **Custom Hooks**: `useSocket`, `usePollTimer`, `usePollState`
-- **Context API**: Global state management with `PollContext`
-- **Service Layer**: Centralized API calls
-- **Real-time Updates**: Socket.IO client integration
-
-## 🔄 State Recovery Flow
-
-1. Page loads → Call `GET /api/poll/current`
-2. If poll is active → Restore UI with current state
-3. Calculate remaining time using server timestamp
-4. Check if student already voted
-5. Subscribe to real-time updates via Socket.IO
-
-## 🎯 Key Technical Decisions
-
-### Timer Synchronization
-
-```typescript
-remainingTime = duration - (now - startedAt)
-```
-
-- Server provides `startedAt` timestamp
-- Client calculates remaining time locally
-- Late joiners automatically see correct time
-
-### Double Vote Prevention
-
-- Unique compound index: `(pollId, studentId)`
-- Server validates before accepting votes
-- Returns 409 Conflict if already voted
-
-### State Recovery
-
-- Server is single source of truth
-- `/api/poll/current` returns complete poll state
-- Frontend reconstructs UI from server data
-
-## 📚 API Documentation
-
-See [backend/README.md](backend/README.md) for complete API documentation.
-
-## 🧪 Testing
-
-### Manual Testing Checklist
-
-- [ ] Teacher can create polls
-- [ ] Students can vote
-- [ ] Real-time updates work
-- [ ] Page refresh preserves state
-- [ ] Timer synchronization works for late joiners
-- [ ] Double voting is prevented
-- [ ] Chat functionality works
-- [ ] Teacher can kick students
-- [ ] Poll history displays correctly
-
-## 🐛 Troubleshooting
-
-### Backend won't start
-
-- Ensure MongoDB is running
-- Check if port 5000 is available
-- Verify `.env` file exists
-
-### Frontend won't connect
-
-- Ensure backend is running first
-- Check CORS settings in backend
-- Verify `.env` file has correct API URL
-
-### Socket.IO not connecting
-
-- Check firewall settings
-- Verify SOCKET_URL in frontend `.env`
-- Check browser console for errors
-
-## 📝 License
-
-MIT
-
-## 🙏 Acknowledgments
-
-Built according to the technical specification in `live_polling_system_fullstack_technical_documentation.md`
+---

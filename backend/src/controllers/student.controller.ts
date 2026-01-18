@@ -27,6 +27,23 @@ class StudentController {
             res.status(500).json({ error: 'Internal server error' });
         }
     }
+    async registerStudent(req: Request, res: Response) {
+        try {
+            const { studentId, name, socketId } = req.body;
+            if (!studentId || !name || !socketId) {
+                return res.status(400).json({ error: 'Missing fields' });
+            }
+
+            await studentService.registerStudent(studentId, name, socketId);
+
+            res.json({ success: true });
+        } catch (error: any) {
+            if (error.message.includes('kicked')) {
+                return res.status(403).json({ error: error.message });
+            }
+            res.status(500).json({ error: 'Registration failed' });
+        }
+    }
 }
 
 export default new StudentController();

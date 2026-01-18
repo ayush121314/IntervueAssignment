@@ -68,8 +68,20 @@ class ApiService {
         return response.data;
     }
 
-    async validateStudentSession(studentId: string): Promise<{ valid: boolean; student?: { id: string, name: string } }> {
-        const response = await api.get(`/student/session/${studentId}`);
+    async validateStudentSession(studentId: string): Promise<{ valid: boolean; student?: { id: string, name: string }; isKicked?: boolean }> {
+        try {
+            const response = await api.get(`/student/session/${studentId}`);
+            return response.data;
+        } catch (error: any) {
+            if (error.response && error.response.status === 403) {
+                return { valid: false, isKicked: true };
+            }
+            throw error;
+        }
+    }
+
+    async registerStudent(studentId: string, name: string, socketId: string): Promise<any> {
+        const response = await api.post('/student/register', { studentId, name, socketId });
         return response.data;
     }
 }

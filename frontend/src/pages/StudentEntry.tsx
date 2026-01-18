@@ -3,50 +3,45 @@ import { useNavigate } from 'react-router-dom';
 import { usePollContext } from '../context/PollContext';
 import './StudentEntry.css';
 import { nanoid } from 'nanoid';
+import { useSocket } from '../hooks/useSocket';
 import apiService from '../services/api';
-
-
 const StudentEntry: React.FC = () => {
     const [name, setName] = useState('');
     const navigate = useNavigate();
-    const { studentInfo, setStudentInfo } = usePollContext();
+    const { setStudentInfo } = usePollContext();
 
-    // If student info already exists in session, check with server (on mount only)
-    React.useEffect(() => {
-        const verifySession = async () => {
-            if (studentInfo) {
-                try {
-                    const response = await apiService.validateStudentSession(studentInfo.id);
-                    if (response.valid) {
-                        navigate('/student/poll');
-                    } else {
-                        // Clear invalid session
-                        setStudentInfo(null);
-                    }
-                } catch (error) {
-                    console.error('Session validation failed:', error);
-                    setStudentInfo(null);
-                }
-            }
-        };
-        verifySession();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    // Session check is now handled by PublicStudentRoute
+    // We just render the form if we are allowed to be here.
 
-    const handleContinue = (e: React.FormEvent) => {
+    const { socket } = useSocket();
+
+    const handleContinue = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name.trim()) return;
 
         // Generate UUID for student
         const studentId = nanoid();
 
-        // Store in context (which also stores in sessionStorage)
-        setStudentInfo({
-            id: studentId,
-            name: name.trim()
-        });
+        try {
+            // Register on backend first (requires socketId)
+            // If socket isn't connected yet, we might have an issue. 
+            // Usually it connects quickly.
+            const currentSocketId = socket?.id || 'HTTP_INIT_' + nanoid(); // Fallback if race? 
+            // Ideally we wait for socket? But let's try strict.
 
-        navigate('/student/poll');
+            await apiService.registerStudent(studentId, name.trim(), currentSocketId);
+
+            // Store in context (which also stores in sessionStorage)
+            setStudentInfo({
+                id: studentId,
+                name: name.trim()
+            });
+
+            navigate('/student/poll');
+        } catch (error) {
+            console.error('Registration failed:', error);
+            // Handle Kicked or other errors?
+        }
     };
 
     return (

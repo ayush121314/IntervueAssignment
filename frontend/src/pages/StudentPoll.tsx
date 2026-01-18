@@ -30,29 +30,6 @@ const StudentPoll: React.FC = () => {
         }
     }, [studentInfo, navigate]);
 
-    // Server as Source of Truth: Check if already kicked on mount
-    useEffect(() => {
-        const verifyKickedStatus = async () => {
-            if (studentInfo) {
-                try {
-                    const response = await apiService.validateStudentSession(studentInfo.id);
-                    if (!response.valid) {
-                        setIsKicked(true);
-                    }
-                } catch (error: any) {
-                    // If 403 (Kicked), show kicked screen
-                    if (error.response?.status === 403) {
-                        setIsKicked(true);
-                    } else if (error.response?.status === 404) {
-                        // If not found, clear and redirect to join
-                        navigate('/student/join');
-                    }
-                }
-            }
-        };
-        verifyKickedStatus();
-    }, [studentInfo, navigate]);
-
     // Register student via socket
     useEffect(() => {
         if (socket && isConnected && studentInfo) {
@@ -77,28 +54,6 @@ const StudentPoll: React.FC = () => {
             socket.off('student:kicked', handleStudentKicked);
         };
     }, [socket]);
-
-    // Check if student already voted when poll loads
-    useEffect(() => {
-        const checkVoteStatus = async () => {
-            if (pollState.status === 'ACTIVE' && pollState.pollId && studentInfo) {
-                try {
-                    const { hasVoted: voted, vote } = await apiService.checkVoteStatus(
-                        pollState.pollId,
-                        studentInfo.id
-                    );
-                    setHasVoted(voted);
-                    if (vote) {
-                        setVotedOptionId(vote.optionId);
-                    }
-                } catch (error) {
-                    console.error('Error checking vote status:', error);
-                }
-            }
-        };
-
-        checkVoteStatus();
-    }, [pollState.pollId, pollState.status, studentInfo, setHasVoted, setVotedOptionId]);
 
     const handleSubmit = async () => {
         if (!selectedOption || !pollState.pollId || !studentInfo) return;
